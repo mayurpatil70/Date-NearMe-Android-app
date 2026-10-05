@@ -23,12 +23,17 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // Route Middleware
+const aiRoutes = require("./routes/ai.routes");
+const venueRoutes = require("./routes/venue.routes");
+
 app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/wallet", walletRoutes);
 app.use("/api/chat", chatRoutes);
 app.use("/api/stories", storyRoutes);
 app.use("/api/payments", paymentRoutes);
+app.use("/api/ai", aiRoutes);
+app.use("/api/venues", venueRoutes);
 
 app.use((err, req, res, next) => {
   console.error("Error in routes:", err);
