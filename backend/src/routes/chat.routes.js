@@ -1,9 +1,13 @@
 const express = require("express");
-const { unlockChat } = require("../controllers/chat.controller");
+const chatController = require("../controllers/chat.controller");
 const { protect } = require("../middleware/auth.middleware");
+const { upload } = require("../config/cloudinary"); 
 
 const router = express.Router();
 
-router.post("/unlock", protect, unlockChat);
+// Sprint 2: Blind Audio & Media Routes
+router.post("/initialize", protect, chatController.initializeMatch);
+router.post("/audio/upload", protect, upload.single("audio"), chatController.uploadAudioPrompt);
+router.post("/audio/approve", protect, chatController.approveAudioPrompt);
 
 module.exports = router;
