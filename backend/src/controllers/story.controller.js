@@ -2,6 +2,7 @@ const Story = require("../models/Story");
 
 exports.uploadStory = async (req, res) => {
   try {
+    console.log("upload story");
     if (!req.file) {
       return res.status(400).json({ message: "No file provided" });
     }
@@ -17,6 +18,7 @@ exports.uploadStory = async (req, res) => {
       story: newStory,
     });
   } catch (error) {
+    console.log("Error uploading story:", error);
     res
       .status(500)
       .json({ message: "Error uploading story", error: error.message });

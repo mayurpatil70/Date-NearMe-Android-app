@@ -1,7 +1,7 @@
 require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
-const mongoose = require("mongoose");
+const { connectDB } = require("./config/db");
 
 // Import Redis Client (It now connects automatically on import)
 const redisClient = require("./config/redis");
@@ -13,6 +13,7 @@ const walletRoutes = require("./routes/wallet.routes");
 const chatRoutes = require("./routes/chat.routes");
 const storyRoutes = require("./routes/story.routes");
 const paymentRoutes = require("./routes/payment.routes");
+const ngrok = require("@ngrok/ngrok");
 
 const app = express();
 
@@ -29,6 +30,13 @@ app.use("/api/chat", chatRoutes);
 app.use("/api/stories", storyRoutes);
 app.use("/api/payments", paymentRoutes);
 
+app.use((err, req, res, next) => {
+  console.error("Error in routes:", err);
+
+  // Send the 500 response back to the client
+  res.status(500).json({ message: "Internal Server Error" });
+});
+
 // Global Error Handler
 app.use((err, req, res, next) => {
   console.error(err.stack);
@@ -42,9 +50,8 @@ const PORT = process.env.PORT || 5000;
 
 const startServer = async () => {
   try {
-    // Connect to MongoDB
-    await mongoose.connect(process.env.MONGO_URI);
-    console.log("MongoDB Connected");
+    // Connect to Neon PostgreSQL
+    await connectDB();
 
     // Start Express Server
     app.listen(PORT, () => {
