@@ -1,4 +1,4 @@
-const ChatAccess = require('../models/ChatAccess');
+const { pool } = require('../config/db');
 
 module.exports = (io) => {
     io.on('connection', (socket) => {
@@ -9,15 +9,22 @@ module.exports = (io) => {
 
         socket.on('send_message', async ({ senderId, receiverId, message }) => {
             try {
-                // 1. Verify Sender has paid for access to Receiver
-                const access = await ChatAccess.findOne({ 
-                    user: senderId, 
-                    targetUser: receiverId 
-                });
+                // 1. Verify there is an ACTIVE chat session between these two users
+                const sessionRes = await pool.query(
+                    `SELECT id, status FROM chat_sessions 
+                     WHERE ((user_a_id = $1 AND user_b_id = $2) OR (user_a_id = $2 AND user_b_id = $1))`,
+                    [senderId, receiverId]
+                );
 
-                if (!access || access.validUntil < new Date()) {
+                if (sessionRes.rows.length === 0) {
+                    return socket.emit('chat_error', { message: 'No match found.' });
+                }
+
+                const session = sessionRes.rows[0];
+
+                if (session.status !== 'ACTIVE') {
                     return socket.emit('chat_error', { 
-                        message: 'Chat access expired or locked. Please spend 1 coin to unlock for 15 days.' 
+                        message: 'Chat is locked. Both users must approve audio prompts first.' 
                     });
                 }
 
@@ -30,6 +37,12 @@ module.exports = (io) => {
                     // Fallback to FCM Push Notification if receiver is offline
                     // require('firebase-admin').messaging().send(...)
                 }
+
+                // 3. Update the last_message_at timestamp for Anti-Ghosting State Machine
+                await pool.query(
+                    "UPDATE chat_sessions SET last_message_at = NOW() WHERE id = $1", 
+                    [session.id]
+                );
 
             } catch (err) {
                 console.error("Socket send error:", err);

@@ -101,3 +101,54 @@ exports.approveAudioPrompt = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
+
+// 4. Close Match (Anti-Ghosting / Polite Close)
+exports.closeMatch = async (req, res) => {
+  try {
+    const { sessionId, resolution } = req.body; // resolution: 'POLITE_CLOSE' or 'GHOSTED'
+    const userId = req.user.id;
+
+    const sessionRes = await pool.query("SELECT * FROM chat_sessions WHERE id = $1", [sessionId]);
+    if (sessionRes.rows.length === 0) return res.status(404).json({ message: "Session not found" });
+    
+    const session = sessionRes.rows[0];
+    if (session.status !== 'ACTIVE') return res.status(400).json({ message: "Can only close ACTIVE matches" });
+
+    // Ensure the requester is part of the session
+    if (session.user_a_id !== userId && session.user_b_id !== userId) {
+      return res.status(403).json({ message: "Unauthorized" });
+    }
+
+    if (resolution === 'POLITE_CLOSE') {
+      // Refund the token to BOTH users
+      await pool.query("UPDATE users SET wallet_balance = wallet_balance + $1 WHERE id IN ($2, $3)", [session.escrow_amount, session.user_a_id, session.user_b_id]);
+      
+      // Update session status
+      await pool.query("UPDATE chat_sessions SET status = 'MUTUAL_CLOSE' WHERE id = $1", [sessionId]);
+
+      // Log in escrow ledger
+      await pool.query(
+        "INSERT INTO escrow_ledger (user_id, chat_session_id, amount, transaction_type) VALUES ($1, $2, $3, 'REFUND'), ($4, $5, $6, 'REFUND')",
+        [session.user_a_id, sessionId, session.escrow_amount, session.user_b_id, sessionId, session.escrow_amount]
+      );
+
+      res.json({ message: "Match politely closed. Escrow tokens refunded to both users." });
+    } else if (resolution === 'GHOSTED') {
+      // Logic: If last_message_at > 24 hours ago, the user who didn't message forfeits.
+      // For MVP, we will just slash the token (burn it) and close the match.
+      await pool.query("UPDATE chat_sessions SET status = 'GHOSTED_FORFEIT' WHERE id = $1", [sessionId]);
+      
+      // Log slash in ledger
+      await pool.query(
+        "INSERT INTO escrow_ledger (user_id, chat_session_id, amount, transaction_type) VALUES ($1, $2, $3, 'SLASH'), ($4, $5, $6, 'SLASH')",
+        [session.user_a_id, sessionId, session.escrow_amount, session.user_b_id, sessionId, session.escrow_amount]
+      );
+
+      res.json({ message: "Match closed due to ghosting. Escrow tokens forfeited/slashed." });
+    } else {
+      res.status(400).json({ message: "Invalid resolution type" });
+    }
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
