@@ -10,7 +10,10 @@ const protect = async (req, res, next) => {
             token = req.headers.authorization.split(' ')[1];
 
             // Verify the token using your secret key
-            const decoded = jwt.verify(token, process.env.JWT_SECRET);
+            const jwtSecret =
+              process.env.JWT_SECRET ||
+              "default_fallback_jwt_secret_date_nearme_2026";
+            const decoded = jwt.verify(token, jwtSecret);
 
             // Fetch the user from the database and attach it to the request
             req.user = await User.findById(decoded.id);

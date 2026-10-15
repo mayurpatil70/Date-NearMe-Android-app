@@ -5,9 +5,13 @@ const nodemailer = require("nodemailer");
 
 // Helper function to generate JWT token for authentication
 const generateToken = (id) => {
-  return jwt.sign({ id }, process.env.JWT_SECRET, {
-    expiresIn: "30d",
-  });
+  return jwt.sign(
+    { id },
+    process.env.JWT_SECRET || "default_fallback_jwt_secret_date_nearme_2026",
+    {
+      expiresIn: "30d",
+    },
+  );
 };
 
 // Register a new user
