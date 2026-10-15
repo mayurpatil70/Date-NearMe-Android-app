@@ -13,7 +13,6 @@ const walletRoutes = require("./routes/wallet.routes");
 const chatRoutes = require("./routes/chat.routes");
 const storyRoutes = require("./routes/story.routes");
 const paymentRoutes = require("./routes/payment.routes");
-const ngrok = require("@ngrok/ngrok");
 
 const app = express();
 

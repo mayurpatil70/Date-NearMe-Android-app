@@ -1,6 +1,6 @@
 const Razorpay = require("razorpay");
 const crypto = require("crypto");
-const User = require("../models/User");
+const User = require("../models/user");
 
 const razorpayInstance = new Razorpay({
   key_id: process.env.RAZORPAY_KEY_ID,
@@ -56,11 +56,11 @@ exports.verifyPayment = async (req, res) => {
         .json({ success: false, message: "Invalid payment signature" });
     }
 
-    // Handle database updates based on the payment type
+    // Handle PostgreSQL database updates based on the payment type
     if (type === "registration") {
-      await User.findByIdAndUpdate(userId, { hasLifetimeAccess: true });
+      await User.updateLifetimeAccess(userId, true);
     } else if (type === "recharge") {
-      await User.findByIdAndUpdate(userId, { $inc: { walletBalance: 50 } });
+      await User.addWalletBalance(userId, 50);
     }
 
     res

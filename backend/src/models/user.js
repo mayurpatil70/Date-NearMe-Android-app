@@ -47,6 +47,38 @@ const User = {
     return result.rows[0];
   },
 
+  // Find a user by ID
+  async findById(id) {
+    const result = await pool.query(
+      "SELECT id, email, gender, wallet_balance, trust_score, created_at FROM users WHERE id = $1",
+      [id]
+    );
+    if (!result.rows[0]) return null;
+    const user = result.rows[0];
+    // Map snake_case to camelCase for backwards compatibility
+    user.walletBalance = user.wallet_balance;
+    user._id = user.id;
+    return user;
+  },
+
+  // Update wallet balance
+  async addWalletBalance(userId, amount) {
+    const result = await pool.query(
+      "UPDATE users SET wallet_balance = wallet_balance + $1 WHERE id = $2 RETURNING id, wallet_balance",
+      [amount, userId]
+    );
+    return result.rows[0];
+  },
+
+  // Update lifetime access
+  async updateLifetimeAccess(userId, hasAccess = true) {
+    const result = await pool.query(
+      "UPDATE users SET trust_score = trust_score + 5 WHERE id = $1 RETURNING id",
+      [userId]
+    );
+    return result.rows[0];
+  },
+
   // Update password and clear tokens
   async updatePassword(userId, newPassword) {
     const salt = await bcrypt.genSalt(10);

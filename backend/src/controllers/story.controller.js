@@ -1,15 +1,16 @@
-const Story = require("../models/Story");
+const Story = require("../models/story");
 
 exports.uploadStory = async (req, res) => {
   try {
-    console.log("upload story");
     if (!req.file) {
       return res.status(400).json({ message: "No file provided" });
     }
 
-    // Create the story in the database using the Cloudinary URL
+    const userId = req.user.id || req.user._id;
+
+    // Create the story in PostgreSQL using the Cloudinary URL
     const newStory = await Story.create({
-      user: req.user._id, // Assumes you have your auth middleware protecting this route
+      userId,
       mediaUrl: req.file.path,
     });
 
@@ -18,7 +19,7 @@ exports.uploadStory = async (req, res) => {
       story: newStory,
     });
   } catch (error) {
-    console.log("Error uploading story:", error);
+    console.error("Error uploading story:", error);
     res
       .status(500)
       .json({ message: "Error uploading story", error: error.message });
@@ -27,8 +28,7 @@ exports.uploadStory = async (req, res) => {
 
 exports.getStories = async (req, res) => {
   try {
-    // Fetch active stories and populate the user details (name, avatar)
-    const stories = await Story.find().populate("user", "name avatar");
+    const stories = await Story.findActive();
     res.status(200).json(stories);
   } catch (error) {
     res

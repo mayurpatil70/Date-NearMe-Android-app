@@ -1,16 +1,17 @@
 const razorpay = require('../config/razorpay');
 const crypto = require('crypto');
-const Transaction = require('../models/Transaction');
-const User = require('../models/User');
+const Transaction = require('../models/transaction');
+const User = require('../models/user');
 
 exports.createOrder = async (req, res) => {
     try {
+        const userId = req.user.id || req.user._id;
         // Standard ₹50 = 50 Coins recharge
-        const options = { amount: 50 * 100, currency: "INR", receipt: `rcpt_${req.user._id}_${Date.now()}` };
+        const options = { amount: 50 * 100, currency: "INR", receipt: `rcpt_${userId}_${Date.now()}` };
         const order = await razorpay.orders.create(options);
 
         await Transaction.create({
-            user: req.user._id,
+            userId,
             razorpayOrderId: order.id,
             amount: 50,
             coinsGranted: 50
@@ -25,6 +26,7 @@ exports.createOrder = async (req, res) => {
 exports.verifyPayment = async (req, res) => {
     try {
         const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = req.body;
+        const userId = req.user.id || req.user._id;
 
         const body = razorpay_order_id + "|" + razorpay_payment_id;
         const expectedSignature = crypto
@@ -39,14 +41,12 @@ exports.verifyPayment = async (req, res) => {
         const transaction = await Transaction.findOne({ razorpayOrderId: razorpay_order_id, status: 'pending' });
         if (!transaction) return res.status(400).json({ message: "Transaction not found or processed" });
 
-        transaction.status = 'success';
-        transaction.razorpayPaymentId = razorpay_payment_id;
-        await transaction.save();
+        await Transaction.updateStatus(razorpay_order_id, 'success', razorpay_payment_id);
 
-        req.user.walletBalance += transaction.coinsGranted;
-        await req.user.save();
+        const coinsToAdd = transaction.coins_granted || transaction.coinsGranted || 50;
+        const updatedUser = await User.addWalletBalance(userId, coinsToAdd);
 
-        res.json({ message: "Payment verified", newBalance: req.user.walletBalance });
+        res.json({ message: "Payment verified", newBalance: updatedUser.wallet_balance });
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
@@ -54,18 +54,17 @@ exports.verifyPayment = async (req, res) => {
 
 exports.unlockLifetimeAccess = async (req, res) => {
     try {
-        if (req.user.hasLifetimeAccess) {
-            return res.status(400).json({ message: "Lifetime access already unlocked." });
-        }
-        if (req.user.walletBalance < 9) {
+        const userId = req.user.id || req.user._id;
+        const user = await User.findById(userId);
+
+        if (user.wallet_balance < 9) {
             return res.status(400).json({ message: "Insufficient coins. Recharge ₹50 required." });
         }
 
-        req.user.walletBalance -= 9;
-        req.user.hasLifetimeAccess = true;
-        await req.user.save();
+        const updatedUser = await User.addWalletBalance(userId, -9);
+        await User.updateLifetimeAccess(userId, true);
 
-        res.json({ message: "Lifetime access unlocked!", walletBalance: req.user.walletBalance });
+        res.json({ message: "Lifetime access unlocked!", walletBalance: updatedUser.wallet_balance });
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
