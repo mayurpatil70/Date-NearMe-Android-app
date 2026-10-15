@@ -15,6 +15,21 @@ router.get("/", protect, getStories);
 
 // Route to upload a new story
 // 'media' must match the field name appended in your frontend FormData
-router.post("/upload", protect, upload.single("media"), uploadStory);
+router.post(
+  "/upload",
+  protect,
+  (req, res, next) => {
+    upload.single("media")(req, res, (err) => {
+      if (err) {
+        console.error("Cloudinary / Multer upload error:", err);
+        return res.status(400).json({
+          message: err.message || "Failed to upload story media to Cloudinary",
+        });
+      }
+      next();
+    });
+  },
+  uploadStory
+);
 
 module.exports = router;
