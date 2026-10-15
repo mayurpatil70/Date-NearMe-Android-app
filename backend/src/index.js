@@ -50,6 +50,11 @@ app.use((err, req, res, next) => {
     .json({ message: "Internal Server Error", error: err.message });
 });
 
+// Health check route
+app.get("/", (req, res) => {
+  res.json({ status: "ok", message: "Date-NearMe API is live and healthy!" });
+});
+
 // Database Connections & Server Initialization
 const PORT = process.env.PORT || 5000;
 
@@ -68,4 +73,8 @@ const startServer = async () => {
   }
 };
 
-startServer();
+if (require.main === module) {
+  startServer();
+}
+
+module.exports = app;

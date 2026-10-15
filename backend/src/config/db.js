@@ -14,7 +14,9 @@ const connectDB = async () => {
         client.release();
     } catch (error) {
         console.error('PostgreSQL connection failed:', error.message);
-        process.exit(1);
+        if (!process.env.VERCEL) {
+            process.exit(1);
+        }
     }
 };
 
