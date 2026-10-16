@@ -150,8 +150,16 @@ const Register = () => {
                   },
                 ],
               },
+              other: {
+                name: "Cards, Netbanking & Wallets",
+                instruments: [
+                  { method: "card" },
+                  { method: "netbanking" },
+                  { method: "wallet" },
+                ],
+              },
             },
-            sequence: ["block.upi"],
+            sequence: ["block.upi", "block.other"],
             preferences: {
               show_default_blocks: true,
             },
