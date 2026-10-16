@@ -137,6 +137,26 @@ const Register = () => {
           contact: formData.phoneNumber,
         },
         theme: { color: "#711a31" },
+        config: {
+          display: {
+            blocks: {
+              upi: {
+                name: "Pay using UPI Apps",
+                instruments: [
+                  {
+                    method: "upi",
+                    flows: ["intent", "qr"],
+                    apps: ["google_pay", "phonepe", "paytm", "bhim"],
+                  },
+                ],
+              },
+            },
+            sequence: ["block.upi"],
+            preferences: {
+              show_default_blocks: true,
+            },
+          },
+        },
         modal: {
           ondismiss: function () {
             setLoading(false);
