@@ -24,15 +24,20 @@ app.use(express.urlencoded({ extended: true }));
 // Route Middleware
 const aiRoutes = require("./routes/ai.routes");
 const venueRoutes = require("./routes/venue.routes");
+const partnerRoutes = require("./routes/partner.routes");
+const affiliateRoutes = require("./routes/affiliate.routes");
 
 app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
+app.use("/api/user", userRoutes); // Alias for singular endpoint
 app.use("/api/wallet", walletRoutes);
 app.use("/api/chat", chatRoutes);
 app.use("/api/stories", storyRoutes);
 app.use("/api/payments", paymentRoutes);
 app.use("/api/ai", aiRoutes);
 app.use("/api/venues", venueRoutes);
+app.use("/api/partners", partnerRoutes);
+app.use("/api/affiliate", affiliateRoutes);
 
 app.use((err, req, res, next) => {
   console.error("Error in routes:", err);

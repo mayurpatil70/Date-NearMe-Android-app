@@ -17,7 +17,21 @@ const generateToken = (id) => {
 // Register a new user
 exports.register = async (req, res) => {
   try {
-    const { email, password, gender } = req.body;
+    const {
+      email,
+      password,
+      gender,
+      phoneNumber,
+      phone,
+      displayName,
+      referredBy,
+      diet,
+      relationshipIntent,
+      familyDynamic,
+      motherTongue,
+    } = req.body;
+    const resolvedPhone = phoneNumber || phone || null;
+    const resolvedDisplayName = displayName || (email ? email.split("@")[0] : null);
     const isAdmin =
       email && email.trim().toLowerCase() === "noballondesk@gmail.com";
 
@@ -28,23 +42,29 @@ exports.register = async (req, res) => {
         // If admin test account already exists, log in seamlessly
         await User.addWalletBalance(userExists.id, 500);
         await User.updateLifetimeAccess(userExists.id, true);
+        const fullAdmin = await User.findById(userExists.id);
         return res.status(200).json({
-          id: userExists.id,
-          email: userExists.email,
+          ...fullAdmin,
           token: generateToken(userExists.id),
           isAdmin: true,
-          walletBalance: 500,
           hasLifetimeAccess: true,
         });
       }
       return res.status(400).json({ message: "User already exists" });
     }
 
-    // Create new user
+    // Create new user with affiliate code & referral tracking
     const user = await User.create({
       email,
       password,
       gender,
+      phoneNumber: resolvedPhone,
+      displayName: resolvedDisplayName,
+      referredBy,
+      diet,
+      relationshipIntent,
+      familyDynamic,
+      motherTongue,
     });
 
     if (user) {
@@ -56,6 +76,18 @@ exports.register = async (req, res) => {
       res.status(201).json({
         id: user.id,
         email: user.email,
+        phoneNumber: user.phone_number,
+        displayName: user.display_name,
+        gender: user.gender,
+        affiliateCode: user.affiliate_code,
+        referredBy: user.referred_by,
+        affiliateBalance: user.affiliate_balance || 0,
+        totalReferrals: user.total_referrals || 0,
+        diet: user.diet,
+        relationshipIntent: user.relationship_intent,
+        familyDynamic: user.family_dynamic,
+        motherTongue: user.mother_tongue,
+        isShieldVerified: user.is_shield_verified,
         token: generateToken(user.id),
         isAdmin,
         walletBalance: isAdmin ? 500 : (user.wallet_balance || 0),
@@ -80,17 +112,16 @@ exports.login = async (req, res) => {
 
     if (user && (await User.matchPassword(password, user.password_hash))) {
       if (isAdmin) {
-        // Ensure admin always has high balance and lifetime access
         await User.addWalletBalance(user.id, 100);
         await User.updateLifetimeAccess(user.id, true);
       }
 
+      const fullUser = await User.findById(user.id);
+
       res.json({
-        id: user.id,
-        email: user.email,
+        ...fullUser,
         token: generateToken(user.id),
         isAdmin,
-        walletBalance: isAdmin ? 500 : (user.wallet_balance || 0),
         hasLifetimeAccess: isAdmin || user.trust_score > 0,
       });
     } else {

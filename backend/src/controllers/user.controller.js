@@ -33,3 +33,39 @@ exports.getNearbyUsers = async (req, res) => {
         res.status(500).json({ error: error.message });
     }
 };
+
+exports.getProfile = async (req, res) => {
+    try {
+        const user = await req.user;
+        res.json({
+            id: user.id,
+            email: user.email,
+            phoneNumber: user.phone_number || user.phoneNumber,
+            displayName: user.display_name || user.displayName,
+            gender: user.gender,
+            walletBalance: user.wallet_balance || user.walletBalance,
+            trustScore: user.trust_score || user.trustScore,
+            createdAt: user.created_at,
+        });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
+
+exports.updateProfile = async (req, res) => {
+    try {
+        const User = require('../models/user');
+        const { phoneNumber, displayName, gender } = req.body;
+        const updated = await User.updateProfile(req.user.id, {
+            phoneNumber,
+            displayName,
+            gender
+        });
+        res.json({
+            message: 'Profile updated successfully',
+            user: updated
+        });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
