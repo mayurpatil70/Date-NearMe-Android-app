@@ -1,3 +1,4 @@
-const app = require("../src/index");
+const serverExports = require("../src/index");
+const app = serverExports.app || serverExports;
 
 module.exports = app;
