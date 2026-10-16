@@ -1,8 +1,13 @@
+"use client";
+
 import React, { useState, useEffect, useRef, useContext } from "react";
-import { useNavigate } from "react-router-dom";
+import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 import { AuthContext } from "../../Context/AuthContext";
 import api from "../../api/axiosConfig";
+import HingeNavBar from "../../../components/HingeNavBar";
+import HingeLikesYouEmpty from "../../../components/HingeLikesYouEmpty";
+import { Info } from "lucide-react";
 
 // Default Instagram-style 24h Stories matching Screenshot 3
 const defaultStories = [
@@ -428,11 +433,11 @@ const initialMatches = [
 ];
 
 const Radar = () => {
-  const navigate = useNavigate();
+  const router = useRouter();
   const { user, updateUserProfile, logout } = useContext(AuthContext);
 
-  // Tabs: 'feed' | 'reels' | 'discover' | 'standouts' | 'likes' | 'matches' | 'cafes' | 'affiliate' | 'profile'
-  const [activeTab, setActiveTab] = useState("feed");
+  // Tabs: 'discover' | 'standouts' | 'likes' | 'matches' | 'profile' | 'feed' | 'reels' | 'cafes' | 'affiliate'
+  const [activeTab, setActiveTab] = useState("discover");
 
   // Social Feed & Following state (Instagram/YouTube ecosystem)
   const [followingMap, setFollowingMap] = useState({
@@ -1076,7 +1081,7 @@ const Radar = () => {
 
   // Instagram-style Stories Tray matching Screenshot 3
   const renderStoriesTray = () => (
-    <div className="w-full bg-black/40 backdrop-blur-xl border border-white/[0.08] rounded-3xl p-3 sm:p-4 mb-5 shadow-lg overflow-x-auto scrollbar-hide flex items-center space-x-4">
+    <div className="w-full bg-white/90 backdrop-blur-2xl border border-stone-200/80 rounded-3xl p-3.5 sm:p-4 mb-5 shadow-[0_8px_25px_rgba(0,0,0,0.03)] overflow-x-auto scrollbar-hide flex items-center space-x-4">
       {/* Current User Story with + Badge */}
       <div className="flex flex-col items-center shrink-0 group w-18">
         <div className="relative">
@@ -1097,11 +1102,11 @@ const Radar = () => {
             }}
             className={`w-16 h-16 rounded-full cursor-pointer transition p-[2.5px] ${
               userHasActiveStory || storyList.some((s) => s.id.startsWith("my_story_"))
-                ? "bg-gradient-to-tr from-[#f09433] via-[#dc2743] to-[#bc1888] shadow-lg shadow-rose-950/40 hover:scale-105"
-                : "border-2 border-dashed border-stone-600 group-hover:border-rose-400"
+                ? "bg-gradient-to-tr from-[#f09433] via-[#dc2743] to-[#bc1888] shadow-md shadow-rose-500/20 hover:scale-105"
+                : "border-2 border-dashed border-stone-300 group-hover:border-[#711A31]"
             }`}
           >
-            <div className="w-full h-full rounded-full bg-stone-800 flex items-center justify-center text-lg font-bold text-white overflow-hidden border-2 border-[#0a090e]">
+            <div className="w-full h-full rounded-full bg-stone-100 flex items-center justify-center text-lg font-bold text-stone-800 overflow-hidden border-2 border-white">
               {(profileForm.displayName?.[0] || user?.email?.[0] || "U").toUpperCase()}
             </div>
           </div>
@@ -1112,13 +1117,13 @@ const Radar = () => {
               e.stopPropagation();
               setStoryCreatorOpen(true);
             }}
-            className="absolute -bottom-0.5 -right-0.5 bg-gradient-to-r from-blue-500 to-indigo-600 hover:scale-110 active:scale-95 text-white w-6 h-6 rounded-full flex items-center justify-center text-xs font-black border-2 border-[#0a090e] shadow-md transition"
+            className="absolute -bottom-0.5 -right-0.5 bg-[#711A31] hover:bg-[#541223] hover:scale-110 active:scale-95 text-white w-6 h-6 rounded-full flex items-center justify-center text-xs font-black border-2 border-white shadow-md transition"
             title="Add to story (Photo, Video, Songs & Emojis)"
           >
             +
           </button>
         </div>
-        <span className="text-[11px] font-medium text-stone-300 mt-1.5 text-center">
+        <span className="text-[11px] font-semibold text-stone-700 mt-1.5 text-center">
           Your story
         </span>
       </div>
@@ -1150,18 +1155,18 @@ const Radar = () => {
             {s.mediaType === "video" || s.isVideo ? (
               <video
                 src={s.img}
-                className="w-full h-full rounded-full object-cover border-2 border-[#0a090e]"
+                className="w-full h-full rounded-full object-cover border-2 border-white"
                 muted
               />
             ) : (
               <img
                 src={s.img}
                 alt={s.user}
-                className="w-full h-full rounded-full object-cover border-2 border-[#0a090e]"
+                className="w-full h-full rounded-full object-cover border-2 border-white"
               />
             )}
           </div>
-          <span className="text-[11px] font-medium text-stone-300 mt-1.5 truncate max-w-[72px] text-center">
+          <span className="text-[11px] font-semibold text-stone-700 mt-1.5 truncate max-w-[72px] text-center">
             {s.user}
           </span>
         </div>
@@ -1170,18 +1175,18 @@ const Radar = () => {
   );
 
   return (
-    <div className="min-h-screen w-full bg-[#0a090e] font-sans text-white selection:bg-[#711a31] selection:text-white relative overflow-x-hidden">
-      {/* AMBIENT FROSTED GLASS BACKGROUND REFLECTIONS */}
+    <div className="min-h-screen w-full bg-[#FAF8F5] font-sans text-stone-900 selection:bg-[#711a31] selection:text-white relative overflow-x-hidden">
+      {/* AMBIENT FROSTED WARM BACKGROUND REFLECTIONS */}
       <div className="fixed inset-0 z-0 pointer-events-none overflow-hidden">
-        <div className="absolute -top-32 left-1/4 w-[500px] h-[500px] bg-[#711a31]/20 rounded-full blur-[120px] animate-pulse"></div>
-        <div className="absolute top-1/2 -right-32 w-[450px] h-[450px] bg-purple-900/15 rounded-full blur-[130px]"></div>
-        <div className="absolute bottom-10 left-10 w-[400px] h-[400px] bg-amber-600/10 rounded-full blur-[100px]"></div>
+        <div className="absolute -top-32 left-1/4 w-[550px] h-[550px] bg-rose-200/35 rounded-full blur-[130px] animate-pulse"></div>
+        <div className="absolute top-1/2 -right-32 w-[500px] h-[500px] bg-amber-100/35 rounded-full blur-[140px]"></div>
+        <div className="absolute bottom-10 left-10 w-[450px] h-[450px] bg-pink-100/40 rounded-full blur-[120px]"></div>
       </div>
 
       {/* =========================================================================
-          DESKTOP LEFT SIDEBAR NAVIGATION (Instagram & Twitter Web Style)
+          DESKTOP LEFT SIDEBAR NAVIGATION (Hinge White Gloss Style)
          ========================================================================= */}
-      <aside className="hidden lg:flex flex-col justify-between fixed top-0 left-0 bottom-0 w-64 xl:w-72 bg-[#0c0b12]/95 backdrop-blur-2xl border-r border-white/[0.08] p-5 z-40">
+      <aside className="hidden lg:flex flex-col justify-between fixed top-0 left-0 bottom-0 w-64 xl:w-72 bg-white/90 backdrop-blur-2xl border-r border-stone-200/80 p-5 z-40 shadow-[4px_0_24px_rgba(0,0,0,0.02)]">
         <div className="flex flex-col space-y-6">
           {/* Brand / Logo */}
           <div
@@ -1191,16 +1196,16 @@ const Radar = () => {
               window.scrollTo({ top: 0, behavior: "smooth" });
             }}
           >
-            <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-[#711a31] via-rose-600 to-amber-500 text-white flex items-center justify-center font-serif text-xl font-black shadow-lg shadow-rose-950/50 group-hover:scale-105 transition">
+            <div className="w-10 h-10 rounded-2xl bg-[#711A31] text-white flex items-center justify-center font-serif text-xl font-black shadow-lg shadow-[#711A31]/25 group-hover:scale-105 transition">
               H
             </div>
             <div>
               <div className="flex items-center space-x-1.5">
-                <span className="font-serif text-xl font-black tracking-tight text-white">
+                <span className="font-serif text-xl font-black tracking-tight text-stone-900">
                   Date-NearMe
                 </span>
               </div>
-              <span className="text-[10px] font-sans font-extrabold text-rose-400 uppercase tracking-widest bg-rose-950/60 px-2 py-0.5 rounded-full border border-rose-500/30">
+              <span className="text-[10px] font-sans font-extrabold text-[#711A31] uppercase tracking-widest bg-rose-50 px-2 py-0.5 rounded-full border border-rose-200">
                 Social & Dating
               </span>
             </div>
@@ -1216,8 +1221,8 @@ const Radar = () => {
               }}
               className={`flex items-center space-x-3.5 px-4 py-3 rounded-2xl transition ${
                 activeTab === "feed"
-                  ? "bg-[#711a31] text-white shadow-lg shadow-rose-950/40"
-                  : "text-stone-400 hover:text-white hover:bg-white/[0.05]"
+                  ? "bg-[#711A31] text-white shadow-md shadow-[#711A31]/20 font-bold"
+                  : "text-stone-600 hover:text-stone-900 hover:bg-stone-100/80"
               }`}
             >
               <span className="text-xl">📱</span>
@@ -1232,8 +1237,8 @@ const Radar = () => {
               }}
               className={`flex items-center space-x-3.5 px-4 py-3 rounded-2xl transition ${
                 activeTab === "reels"
-                  ? "bg-[#711a31] text-white shadow-lg shadow-rose-950/40"
-                  : "text-stone-400 hover:text-white hover:bg-white/[0.05]"
+                  ? "bg-[#711A31] text-white shadow-md shadow-[#711A31]/20 font-bold"
+                  : "text-stone-600 hover:text-stone-900 hover:bg-stone-100/80"
               }`}
             >
               <span className="text-xl">🎬</span>
@@ -1248,8 +1253,8 @@ const Radar = () => {
               }}
               className={`flex items-center space-x-3.5 px-4 py-3 rounded-2xl transition ${
                 activeTab === "discover"
-                  ? "bg-[#711a31] text-white shadow-lg shadow-rose-950/40"
-                  : "text-stone-400 hover:text-white hover:bg-white/[0.05]"
+                  ? "bg-[#711A31] text-white shadow-md shadow-[#711A31]/20 font-bold"
+                  : "text-stone-600 hover:text-stone-900 hover:bg-stone-100/80"
               }`}
             >
               <span className="text-xl">💘</span>
@@ -1261,8 +1266,8 @@ const Radar = () => {
               onClick={() => setActiveTab("standouts")}
               className={`flex items-center space-x-3.5 px-4 py-3 rounded-2xl transition ${
                 activeTab === "standouts"
-                  ? "bg-[#711a31] text-white shadow-lg shadow-rose-950/40"
-                  : "text-stone-400 hover:text-white hover:bg-white/[0.05]"
+                  ? "bg-[#711A31] text-white shadow-md shadow-[#711A31]/20 font-bold"
+                  : "text-stone-600 hover:text-stone-900 hover:bg-stone-100/80"
               }`}
             >
               <span className="text-xl">⭐</span>
@@ -1274,8 +1279,8 @@ const Radar = () => {
               onClick={() => setActiveTab("likes")}
               className={`flex items-center justify-between px-4 py-3 rounded-2xl transition ${
                 activeTab === "likes"
-                  ? "bg-[#711a31] text-white shadow-lg shadow-rose-950/40"
-                  : "text-stone-400 hover:text-white hover:bg-white/[0.05]"
+                  ? "bg-[#711A31] text-white shadow-md shadow-[#711A31]/20 font-bold"
+                  : "text-stone-600 hover:text-stone-900 hover:bg-stone-100/80"
               }`}
             >
               <div className="flex items-center space-x-3.5">
@@ -1283,7 +1288,7 @@ const Radar = () => {
                 <span>Likes You</span>
               </div>
               {likesYouList.length > 0 && (
-                <span className="bg-rose-500 text-white text-xs font-black px-2 py-0.5 rounded-full">
+                <span className="bg-[#711A31] text-white text-xs font-black px-2 py-0.5 rounded-full">
                   {likesYouList.length}
                 </span>
               )}
@@ -1294,8 +1299,8 @@ const Radar = () => {
               onClick={() => setActiveTab("matches")}
               className={`flex items-center justify-between px-4 py-3 rounded-2xl transition ${
                 activeTab === "matches"
-                  ? "bg-[#711a31] text-white shadow-lg shadow-rose-950/40"
-                  : "text-stone-400 hover:text-white hover:bg-white/[0.05]"
+                  ? "bg-[#711A31] text-white shadow-md shadow-[#711A31]/20 font-bold"
+                  : "text-stone-600 hover:text-stone-900 hover:bg-stone-100/80"
               }`}
             >
               <div className="flex items-center space-x-3.5">
@@ -1312,8 +1317,8 @@ const Radar = () => {
               onClick={() => setActiveTab("cafes")}
               className={`flex items-center space-x-3.5 px-4 py-3 rounded-2xl transition ${
                 activeTab === "cafes"
-                  ? "bg-[#711a31] text-white shadow-lg shadow-rose-950/40"
-                  : "text-stone-400 hover:text-white hover:bg-white/[0.05]"
+                  ? "bg-[#711A31] text-white shadow-md shadow-[#711A31]/20 font-bold"
+                  : "text-stone-600 hover:text-stone-900 hover:bg-stone-100/80"
               }`}
             >
               <span className="text-xl">☕</span>
@@ -1325,15 +1330,15 @@ const Radar = () => {
               onClick={() => setActiveTab("affiliate")}
               className={`flex items-center justify-between px-4 py-3 rounded-2xl transition ${
                 activeTab === "affiliate"
-                  ? "bg-amber-950/80 text-amber-300 border border-amber-500/40 shadow-lg"
-                  : "text-amber-400/80 hover:text-amber-300 hover:bg-amber-950/30"
+                  ? "bg-amber-600 text-white shadow-md font-bold"
+                  : "text-amber-800 hover:text-amber-900 hover:bg-amber-50"
               }`}
             >
               <div className="flex items-center space-x-3.5">
                 <span className="text-xl">🪙</span>
                 <span>Affiliate (₹30)</span>
               </div>
-              <span className="text-xs font-black text-amber-300 bg-amber-900/50 px-2 py-0.5 rounded-full border border-amber-500/30">
+              <span className="text-xs font-black text-amber-900 bg-amber-100 px-2 py-0.5 rounded-full border border-amber-300">
                 ₹{affiliateStats.affiliateBalance}
               </span>
             </button>
@@ -1343,8 +1348,8 @@ const Radar = () => {
               onClick={() => setActiveTab("profile")}
               className={`flex items-center space-x-3.5 px-4 py-3 rounded-2xl transition ${
                 activeTab === "profile"
-                  ? "bg-[#711a31] text-white shadow-lg shadow-rose-950/40"
-                  : "text-stone-400 hover:text-white hover:bg-white/[0.05]"
+                  ? "bg-[#711A31] text-white shadow-md shadow-[#711A31]/20 font-bold"
+                  : "text-stone-600 hover:text-stone-900 hover:bg-stone-100/80"
               }`}
             >
               <span className="text-xl">👤</span>
@@ -1355,7 +1360,7 @@ const Radar = () => {
           {/* Post Creation Trigger Button */}
           <button
             onClick={() => setNewPostModalOpen(true)}
-            className="w-full bg-gradient-to-r from-[#711a31] via-rose-600 to-amber-600 hover:opacity-90 text-white font-bold py-3.5 px-4 rounded-2xl shadow-lg shadow-rose-950/50 flex items-center justify-center space-x-2 transition active:scale-95 text-sm"
+            className="w-full bg-[#711A31] hover:bg-[#541223] text-white font-bold py-3.5 px-4 rounded-2xl shadow-lg shadow-[#711A31]/25 flex items-center justify-center space-x-2 transition active:scale-95 text-sm"
           >
             <span className="text-base font-black">+</span>
             <span>Create New Post</span>
@@ -1363,60 +1368,60 @@ const Radar = () => {
         </div>
 
         {/* Current User Card at bottom of left sidebar */}
-        <div className="bg-white/[0.04] border border-white/[0.08] p-3 rounded-2xl flex items-center justify-between">
+        <div className="bg-stone-50 border border-stone-200/80 p-3 rounded-2xl flex items-center justify-between">
           <div className="flex items-center space-x-2.5 overflow-hidden">
-            <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-[#711a31] to-rose-600 text-white flex items-center justify-center font-bold text-sm shrink-0 border border-white/20">
+            <div className="w-10 h-10 rounded-full bg-[#711A31] text-white flex items-center justify-center font-bold text-sm shrink-0 border border-white">
               {(profileForm.displayName?.[0] || user?.email?.[0] || "U").toUpperCase()}
             </div>
             <div className="truncate">
-              <p className="text-xs font-bold text-white truncate">
+              <p className="text-xs font-bold text-stone-900 truncate">
                 {profileForm.displayName || user?.displayName || "You"}
               </p>
-              <p className="text-[10px] text-stone-400 truncate">{user?.email}</p>
+              <p className="text-[10px] text-stone-500 truncate">{user?.email}</p>
             </div>
           </div>
-          <div className="text-xs text-emerald-400" title="Lifetime Pass Active">
+          <div className="text-xs text-amber-500" title="Lifetime Pass Active">
             👑
           </div>
         </div>
       </aside>
 
       {/* =========================================================================
-          DESKTOP RIGHT SIDEBAR (Instagram Web "Suggested For You" & Partner Cafes)
+          DESKTOP RIGHT SIDEBAR (Hinge White Gloss Style)
          ========================================================================= */}
-      <aside className="hidden xl:block fixed top-0 right-0 bottom-0 w-80 bg-[#0c0b12]/80 backdrop-blur-2xl border-l border-white/[0.08] p-5 overflow-y-auto z-30">
+      <aside className="hidden xl:block fixed top-0 right-0 bottom-0 w-80 bg-white/90 backdrop-blur-2xl border-l border-stone-200/80 p-5 overflow-y-auto z-30 shadow-[-4px_0_24px_rgba(0,0,0,0.02)]">
         {/* User Mini Profile Header */}
-        <div className="flex items-center justify-between pb-4 border-b border-white/[0.08] mb-5">
+        <div className="flex items-center justify-between pb-4 border-b border-stone-200/80 mb-5">
           <div className="flex items-center space-x-3">
             <div className="w-11 h-11 rounded-full p-[2px] bg-gradient-to-tr from-[#f09433] via-[#dc2743] to-[#bc1888]">
-              <div className="w-full h-full rounded-full bg-stone-800 flex items-center justify-center text-sm font-bold text-white">
+              <div className="w-full h-full rounded-full bg-stone-100 flex items-center justify-center text-sm font-bold text-stone-900">
                 {(profileForm.displayName?.[0] || user?.email?.[0] || "U").toUpperCase()}
               </div>
             </div>
             <div>
-              <p className="text-xs font-bold text-white">
+              <p className="text-xs font-bold text-stone-900">
                 {profileForm.displayName || user?.displayName || "You"}
               </p>
-              <span className="text-[10px] text-stone-400">Verified Member</span>
+              <span className="text-[10px] text-stone-500">Verified Member</span>
             </div>
           </div>
           <button
             onClick={() => setActiveTab("profile")}
-            className="text-xs text-rose-400 hover:text-rose-300 font-bold transition"
+            className="text-xs text-[#711A31] hover:text-[#541223] font-bold transition"
           >
             Switch
           </button>
         </div>
 
-        {/* Suggested For You (Instagram Style Matching Screenshot 3) */}
+        {/* Suggested For You */}
         <div className="mb-6">
           <div className="flex justify-between items-center mb-3">
-            <span className="text-xs font-bold text-stone-400 uppercase tracking-wider">
+            <span className="text-xs font-bold text-stone-500 uppercase tracking-wider">
               Suggested for you
             </span>
             <button
               onClick={() => setActiveTab("discover")}
-              className="text-[11px] font-bold text-white hover:text-rose-300 transition"
+              className="text-[11px] font-bold text-[#711A31] hover:underline transition"
             >
               See All
             </button>
@@ -1450,21 +1455,21 @@ const Radar = () => {
                   <img
                     src={item.img}
                     alt={item.name}
-                    className="w-9 h-9 rounded-full object-cover border border-white/10"
+                    className="w-9 h-9 rounded-full object-cover border border-stone-200"
                   />
                   <div className="leading-tight">
-                    <p className="text-xs font-bold text-white hover:underline cursor-pointer">
+                    <p className="text-xs font-bold text-stone-900 hover:underline cursor-pointer">
                       {item.name}
                     </p>
-                    <p className="text-[10px] text-stone-400">{item.tag}</p>
+                    <p className="text-[10px] text-stone-500">{item.tag}</p>
                   </div>
                 </div>
                 <button
                   onClick={() => handleToggleFollow(item.name)}
                   className={`text-xs font-bold transition px-2.5 py-1 rounded-lg ${
                     followingMap[item.name]
-                      ? "bg-white/10 text-stone-300 hover:bg-white/20"
-                      : "text-rose-400 hover:text-white hover:bg-rose-950/60"
+                      ? "bg-stone-100 text-stone-600 hover:bg-stone-200"
+                      : "text-[#711A31] hover:text-[#541223] hover:bg-rose-50"
                   }`}
                 >
                   {followingMap[item.name] ? "Following" : "Follow"}
@@ -1475,37 +1480,37 @@ const Radar = () => {
         </div>
 
         {/* Partner Cafes Teaser */}
-        <div className="bg-gradient-to-br from-white/[0.04] to-rose-950/20 border border-white/[0.08] rounded-2xl p-4 mb-5">
+        <div className="bg-gradient-to-br from-rose-50/70 to-amber-50/50 border border-rose-100/80 rounded-2xl p-4 mb-5 shadow-sm">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-xs font-bold text-amber-300 flex items-center">
+            <span className="text-xs font-bold text-stone-800 flex items-center">
               <span className="mr-1">☕</span> IRL Cafe Dating
             </span>
-            <span className="text-[10px] font-black bg-rose-500/20 text-rose-300 px-2 py-0.5 rounded-full border border-rose-500/30">
+            <span className="text-[10px] font-black bg-[#711A31] text-white px-2 py-0.5 rounded-full">
               10% OFF
             </span>
           </div>
-          <p className="text-[11px] text-stone-300 mb-3 leading-relaxed">
+          <p className="text-[11px] text-stone-600 mb-3 leading-relaxed">
             Safe public date meetups at our verified QR standee cafe partners.
           </p>
           <button
             onClick={() => setActiveTab("cafes")}
-            className="w-full bg-white/10 hover:bg-white/20 text-white text-xs font-bold py-2 rounded-xl border border-white/10 transition"
+            className="w-full bg-white hover:bg-stone-50 text-stone-900 text-xs font-bold py-2 rounded-xl border border-stone-200 shadow-sm transition"
           >
             Browse 12+ Cafes
           </button>
         </div>
 
         {/* Women Safety Shield */}
-        <div className="p-3 bg-emerald-950/30 border border-emerald-500/20 rounded-2xl text-[11px] text-emerald-300 flex items-center space-x-2">
+        <div className="p-3 bg-emerald-50 border border-emerald-200 rounded-2xl text-[11px] text-emerald-800 flex items-center space-x-2">
           <span className="text-base">🛡️</span>
-          <span>Single-Slot Escrow Protection Active</span>
+          <span className="font-medium">Single-Slot Escrow Protection Active</span>
         </div>
       </aside>
 
       {/* =========================================================================
           MOBILE TOP GLASS HEADER (lg:hidden)
          ========================================================================= */}
-      <header className="lg:hidden sticky top-0 w-full z-40 bg-black/75 backdrop-blur-2xl border-b border-white/[0.08] px-4 py-3 flex justify-between items-center shadow-lg">
+      <header className="lg:hidden sticky top-0 w-full z-40 bg-white/90 backdrop-blur-2xl border-b border-stone-200/80 px-4 py-3 flex justify-between items-center shadow-sm">
         {/* Brand */}
         <div
           className="flex items-center space-x-2.5 cursor-pointer"
@@ -1514,25 +1519,57 @@ const Radar = () => {
             window.scrollTo({ top: 0, behavior: "smooth" });
           }}
         >
-          <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-[#711a31] to-rose-600 text-white flex items-center justify-center font-serif text-lg font-bold shadow-md shadow-rose-950/50">
+          <div className="w-8 h-8 rounded-xl bg-[#711A31] text-white flex items-center justify-center font-serif text-lg font-bold shadow-md shadow-[#711A31]/25">
             H
           </div>
           <div>
-            <span className="font-serif text-xl font-black tracking-tight text-white">
+            <span className="font-serif text-xl font-black tracking-tight text-stone-900">
               Date-NearMe
             </span>
-            <span className="text-[10px] font-sans font-extrabold text-rose-400 ml-1.5 uppercase tracking-wider bg-rose-950/60 px-2 py-0.5 rounded-full border border-rose-500/30">
+            <span className="text-[10px] font-sans font-extrabold text-[#711A31] ml-1.5 uppercase tracking-wider bg-rose-50 px-2 py-0.5 rounded-full border border-rose-200">
               Live
             </span>
           </div>
         </div>
 
         {/* Right Status Clusters */}
-        <div className="flex items-center space-x-2">
+        <div className="flex items-center space-x-1.5 sm:space-x-2">
+          {/* Quick Reels */}
+          <button
+            onClick={() => {
+              setActiveTab("reels");
+              window.scrollTo({ top: 0, behavior: "smooth" });
+            }}
+            className={`px-2.5 py-1 rounded-full text-[11px] font-bold border transition ${
+              activeTab === "reels"
+                ? "bg-[#711A31] text-white border-[#711A31]"
+                : "bg-stone-100 text-stone-700 border-stone-200 hover:bg-stone-200"
+            }`}
+            title="Reels & Shorts"
+          >
+            🎬
+          </button>
+
+          {/* Quick Cafes */}
+          <button
+            onClick={() => {
+              setActiveTab("cafes");
+              window.scrollTo({ top: 0, behavior: "smooth" });
+            }}
+            className={`px-2.5 py-1 rounded-full text-[11px] font-bold border transition ${
+              activeTab === "cafes"
+                ? "bg-[#711A31] text-white border-[#711A31]"
+                : "bg-stone-100 text-stone-700 border-stone-200 hover:bg-stone-200"
+            }`}
+            title="Partner Cafes"
+          >
+            ☕
+          </button>
+
           {/* Create post trigger */}
           <button
             onClick={() => setNewPostModalOpen(true)}
-            className="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center text-lg font-bold border border-white/10"
+            className="w-8 h-8 rounded-full bg-stone-100 hover:bg-stone-200 text-stone-800 flex items-center justify-center text-lg font-bold border border-stone-200"
             title="Create Post"
           >
             +
@@ -1541,7 +1578,7 @@ const Radar = () => {
           {/* Affiliate Earnings Pill */}
           <button
             onClick={() => setActiveTab("affiliate")}
-            className="bg-amber-950/40 hover:bg-amber-950/70 text-amber-300 px-2.5 py-1 rounded-full border border-amber-500/30 text-[11px] font-bold flex items-center transition"
+            className="bg-amber-50 hover:bg-amber-100 text-amber-900 px-2.5 py-1 rounded-full border border-amber-200 text-[11px] font-bold flex items-center transition"
             title="Affiliate Rewards Dashboard"
           >
             <span className="mr-1">🪙</span> ₹{affiliateStats.affiliateBalance}
@@ -1552,8 +1589,8 @@ const Radar = () => {
             onClick={() => setActiveTab("profile")}
             className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-xs cursor-pointer transition ${
               activeTab === "profile"
-                ? "bg-[#711a31] text-white ring-2 ring-rose-400"
-                : "bg-white/10 hover:bg-white/20 text-white"
+                ? "bg-[#711A31] text-white ring-2 ring-rose-400"
+                : "bg-stone-100 hover:bg-stone-200 text-stone-800 border border-stone-200"
             }`}
           >
             {(profileForm.displayName?.[0] || user?.email?.[0] || "U").toUpperCase()}
@@ -1574,20 +1611,20 @@ const Radar = () => {
             {renderStoriesTray()}
 
             {/* Quick "Create Post" card */}
-            <div className="w-full bg-white/[0.04] backdrop-blur-2xl rounded-3xl p-4 border border-white/[0.08] shadow-xl mb-6">
+            <div className="w-full bg-white/95 backdrop-blur-2xl rounded-3xl p-4 border border-stone-200/80 shadow-[0_8px_30px_rgba(0,0,0,0.03)] mb-6">
               <div className="flex items-center space-x-3">
-                <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-[#711a31] to-rose-600 text-white flex items-center justify-center font-bold text-sm shrink-0">
+                <div className="w-10 h-10 rounded-full bg-[#711A31] text-white flex items-center justify-center font-bold text-sm shrink-0 shadow-sm">
                   {(profileForm.displayName?.[0] || user?.email?.[0] || "U").toUpperCase()}
                 </div>
                 <button
                   onClick={() => setNewPostModalOpen(true)}
-                  className="flex-1 bg-white/[0.06] hover:bg-white/[0.1] text-stone-400 hover:text-stone-200 text-left px-4 py-2.5 rounded-full text-xs transition border border-white/[0.06]"
+                  className="flex-1 bg-stone-50 hover:bg-stone-100 text-stone-500 hover:text-stone-800 text-left px-4 py-2.5 rounded-full text-xs transition border border-stone-200"
                 >
                   Share a photo, vibe or date thought...
                 </button>
                 <button
                   onClick={() => setNewPostModalOpen(true)}
-                  className="p-2.5 bg-[#711a31]/60 hover:bg-[#711a31] text-white rounded-full transition shadow-md"
+                  className="p-2.5 bg-rose-50 hover:bg-rose-100 text-[#711A31] rounded-full transition border border-rose-200 shadow-sm"
                   title="Create post"
                 >
                   📷
@@ -1600,28 +1637,28 @@ const Radar = () => {
               {postsList.map((post) => (
                 <article
                   key={post.id}
-                  className="w-full bg-black/60 backdrop-blur-2xl rounded-3xl overflow-hidden border border-white/[0.1] shadow-2xl transition hover:border-white/[0.16]"
+                  className="w-full bg-white/95 backdrop-blur-2xl rounded-[2rem] overflow-hidden border border-stone-200/80 shadow-[0_12px_35px_rgba(0,0,0,0.04)] transition hover:shadow-md"
                 >
                   {/* Post Header */}
-                  <div className="flex items-center justify-between p-3.5 sm:p-4 border-b border-white/[0.06]">
+                  <div className="flex items-center justify-between p-3.5 sm:p-4 border-b border-stone-100">
                     <div className="flex items-center space-x-3">
                       <div className="w-10 h-10 rounded-full p-[2px] bg-gradient-to-tr from-[#f09433] via-[#dc2743] to-[#bc1888] shrink-0">
                         <img
                           src={post.userAvatar}
                           alt={post.user}
-                          className="w-full h-full rounded-full object-cover border border-[#0a090e]"
+                          className="w-full h-full rounded-full object-cover border border-white"
                         />
                       </div>
                       <div className="leading-tight">
                         <div className="flex items-center space-x-1.5">
-                          <span className="font-bold text-sm text-white">{post.user}</span>
+                          <span className="font-bold text-sm text-stone-900">{post.user}</span>
                           {post.verified && (
-                            <span className="text-blue-400 text-xs" title="Verified Creator">
+                            <span className="text-blue-500 text-xs" title="Verified Creator">
                               ✓
                             </span>
                           )}
                         </div>
-                        <span className="text-[11px] text-stone-400">{post.location}</span>
+                        <span className="text-[11px] text-stone-500">{post.location}</span>
                       </div>
                     </div>
 
@@ -1630,8 +1667,8 @@ const Radar = () => {
                       onClick={() => handleToggleFollow(post.user)}
                       className={`text-xs font-bold px-3 py-1.5 rounded-xl transition ${
                         followingMap[post.user]
-                          ? "bg-white/10 text-stone-300 hover:bg-white/20"
-                          : "bg-[#711a31] hover:bg-rose-700 text-white shadow-md shadow-rose-950/40"
+                          ? "bg-stone-100 text-stone-600 hover:bg-stone-200"
+                          : "bg-[#711A31] hover:bg-[#541223] text-white shadow-sm"
                       }`}
                     >
                       {followingMap[post.user] ? "Following" : "Follow"}
@@ -1640,7 +1677,7 @@ const Radar = () => {
 
                   {/* Post Image with Double Tap / Click Like Effect */}
                   <div
-                    className="w-full h-[380px] sm:h-[480px] relative bg-stone-900 cursor-pointer overflow-hidden group select-none"
+                    className="w-full h-[380px] sm:h-[480px] relative bg-stone-100 cursor-pointer overflow-hidden group select-none"
                     onDoubleClick={() => handleLikePost(post.id)}
                   >
                     <img
@@ -1649,7 +1686,7 @@ const Radar = () => {
                       className="w-full h-full object-cover group-hover:scale-[1.01] transition duration-500"
                     />
                     {post.liked && (
-                      <div className="absolute top-3 right-3 bg-black/60 backdrop-blur-md text-rose-500 px-2.5 py-1 rounded-full text-xs font-bold flex items-center space-x-1 border border-rose-500/30">
+                      <div className="absolute top-3 right-3 bg-white/90 backdrop-blur-md text-[#711A31] px-2.5 py-1 rounded-full text-xs font-bold flex items-center space-x-1 border border-rose-200 shadow-md">
                         <span>❤️</span>
                         <span>Liked</span>
                       </div>
@@ -1664,11 +1701,11 @@ const Radar = () => {
                         <button
                           onClick={() => handleLikePost(post.id)}
                           className={`flex items-center space-x-1.5 transition active:scale-125 ${
-                            post.liked ? "text-rose-500" : "text-stone-300 hover:text-white"
+                            post.liked ? "text-[#711A31]" : "text-stone-500 hover:text-stone-900"
                           }`}
                         >
                           <span className="text-2xl">{post.liked ? "❤️" : "🤍"}</span>
-                          <span className="text-xs font-bold text-white">
+                          <span className="text-xs font-bold text-stone-800">
                             {post.likes.toLocaleString()}
                           </span>
                         </button>
@@ -1678,10 +1715,10 @@ const Radar = () => {
                           onClick={() =>
                             setActiveCommentPost(activeCommentPost === post.id ? null : post.id)
                           }
-                          className="flex items-center space-x-1.5 text-stone-300 hover:text-white transition"
+                          className="flex items-center space-x-1.5 text-stone-500 hover:text-stone-900 transition"
                         >
                           <span className="text-2xl">💬</span>
-                          <span className="text-xs font-bold text-white">
+                          <span className="text-xs font-bold text-stone-800">
                             {post.comments.length}
                           </span>
                         </button>
@@ -1692,7 +1729,7 @@ const Radar = () => {
                             navigator.clipboard.writeText(window.location.href);
                             toast.success("Post link copied! Share on WhatsApp/IG ✈️");
                           }}
-                          className="text-stone-300 hover:text-white text-2xl transition hover:rotate-12"
+                          className="text-stone-500 hover:text-stone-900 text-2xl transition hover:rotate-12"
                           title="Share Post"
                         >
                           ✈️
@@ -1702,7 +1739,7 @@ const Radar = () => {
                       {/* Bookmark */}
                       <button
                         onClick={() => toast.success("Saved to your Bookmarks! 🔖")}
-                        className="text-stone-300 hover:text-white text-xl transition"
+                        className="text-stone-500 hover:text-stone-900 text-xl transition"
                         title="Save"
                       >
                         🔖
@@ -1710,33 +1747,33 @@ const Radar = () => {
                     </div>
 
                     {/* Likes count */}
-                    <p className="text-xs font-bold text-white mb-1.5">
+                    <p className="text-xs font-bold text-stone-900 mb-1.5">
                       {post.likes.toLocaleString()} likes
                     </p>
 
                     {/* Caption */}
-                    <div className="text-xs sm:text-sm text-stone-200 leading-relaxed">
-                      <span className="font-bold text-white mr-2">{post.user}</span>
+                    <div className="text-xs sm:text-sm text-stone-700 leading-relaxed">
+                      <span className="font-bold text-stone-900 mr-2">{post.user}</span>
                       <span>{post.caption}</span>
                     </div>
 
                     {/* Time Stamp */}
-                    <span className="text-[10px] text-stone-500 uppercase tracking-wider block mt-1">
+                    <span className="text-[10px] text-stone-400 uppercase tracking-wider block mt-1">
                       {post.time}
                     </span>
 
                     {/* Comments Toggle and Comments list */}
                     {post.comments.length > 0 && (
-                      <div className="mt-3 pt-3 border-t border-white/[0.06] space-y-2">
+                      <div className="mt-3 pt-3 border-t border-stone-100 space-y-2">
                         <div className="flex justify-between items-center">
-                          <span className="text-[11px] font-bold text-stone-400">
+                          <span className="text-[11px] font-bold text-stone-500">
                             Comments ({post.comments.length})
                           </span>
                           <button
                             onClick={() =>
                               setActiveCommentPost(activeCommentPost === post.id ? null : post.id)
                             }
-                            className="text-[11px] text-rose-400 hover:underline"
+                            className="text-[11px] text-[#711A31] font-bold hover:underline"
                           >
                             {activeCommentPost === post.id ? "Hide" : "View all"}
                           </button>
@@ -1746,8 +1783,8 @@ const Radar = () => {
                         {(activeCommentPost === post.id ? post.comments : post.comments.slice(-2)).map(
                           (c, idx) => (
                             <div key={idx} className="text-xs flex items-start space-x-2">
-                              <span className="font-bold text-white shrink-0">{c.user}</span>
-                              <span className="text-stone-300">{c.text}</span>
+                              <span className="font-bold text-stone-900 shrink-0">{c.user}</span>
+                              <span className="text-stone-700">{c.text}</span>
                             </div>
                           )
                         )}
@@ -1755,7 +1792,7 @@ const Radar = () => {
                     )}
 
                     {/* Add Comment Input Bar */}
-                    <div className="mt-3 pt-3 border-t border-white/[0.06] flex items-center space-x-2">
+                    <div className="mt-3 pt-3 border-t border-stone-100 flex items-center space-x-2">
                       <input
                         type="text"
                         placeholder="Add a comment..."
@@ -1768,12 +1805,12 @@ const Radar = () => {
                         onKeyDown={(e) => {
                           if (e.key === "Enter") handleAddComment(post.id);
                         }}
-                        className="flex-1 bg-white/[0.05] border border-white/[0.08] rounded-full px-3.5 py-2 text-xs text-white placeholder-stone-500 focus:outline-none focus:border-rose-400"
+                        className="flex-1 bg-stone-50 border border-stone-200 rounded-full px-4 py-2.5 text-xs text-stone-900 placeholder-stone-400 focus:outline-none focus:bg-white focus:border-[#711A31]"
                       />
                       <button
                         onClick={() => handleAddComment(post.id)}
                         disabled={activeCommentPost !== post.id || !commentInputText.trim()}
-                        className="text-xs font-bold text-rose-400 disabled:text-stone-600 px-3 py-2 rounded-full hover:bg-rose-950/40 transition"
+                        className="text-xs font-bold text-[#711A31] disabled:text-stone-400 px-3 py-2 rounded-full hover:bg-rose-50 transition"
                       >
                         Post
                       </button>
@@ -1794,9 +1831,9 @@ const Radar = () => {
             <div className="w-full flex items-center justify-between mb-4 px-2">
               <div className="flex items-center space-x-2">
                 <span className="text-xl">🎬</span>
-                <h2 className="text-xl font-bold font-serif text-white">Reels & Shorts</h2>
+                <h2 className="text-xl font-bold font-serif text-stone-900">Reels & Shorts</h2>
               </div>
-              <span className="text-xs font-bold text-rose-400 bg-rose-950/60 px-3 py-1 rounded-full border border-rose-500/30">
+              <span className="text-xs font-bold text-[#711A31] bg-rose-50 px-3 py-1 rounded-full border border-rose-200">
                 🔥 Trending Now
               </span>
             </div>
@@ -1959,7 +1996,7 @@ const Radar = () => {
           {/* GPS PERMISSION STRIP */}
           {!locationAllowed && (
             <div className="w-full px-4 pt-2.5">
-              <div className="bg-amber-950/40 border border-amber-500/30 text-amber-300 text-[11px] font-medium rounded-2xl px-3 py-1.5 flex items-center justify-between">
+              <div className="bg-amber-50 border border-amber-200 text-amber-900 text-[11px] font-medium rounded-2xl px-3.5 py-2 flex items-center justify-between shadow-sm">
                 <span>📍 Enable GPS for live physical proximity</span>
                 <button
                   onClick={() => {
@@ -1974,7 +2011,7 @@ const Radar = () => {
                       );
                     }
                   }}
-                  className="text-[10px] bg-amber-500/20 text-amber-200 px-2 py-0.5 rounded font-bold"
+                  className="text-[10px] bg-amber-200/70 text-amber-900 px-2.5 py-1 rounded-full font-bold hover:bg-amber-300 transition"
                 >
                   Turn On
                 </button>
@@ -1992,10 +2029,10 @@ const Radar = () => {
                     setDietFilter(d);
                     setStrictDealbreakers(d !== "All");
                   }}
-                  className={`px-3 py-1 rounded-full text-[11px] font-bold transition ${
+                  className={`px-3.5 py-1.5 rounded-full text-[11px] font-bold transition shadow-sm ${
                     dietFilter === d
-                      ? "bg-[#711a31] text-white border border-rose-400/40"
-                      : "bg-white/[0.05] text-stone-400 border border-white/[0.08] hover:text-white"
+                      ? "bg-[#711A31] text-white border border-[#711A31]"
+                      : "bg-white text-stone-700 border border-stone-200 hover:border-stone-300"
                   }`}
                 >
                   {d}
@@ -2005,10 +2042,10 @@ const Radar = () => {
 
             <button
               onClick={() => setStrictDealbreakers(!strictDealbreakers)}
-              className={`px-2.5 py-1 rounded-full text-[10px] font-bold uppercase transition flex items-center space-x-1 ${
+              className={`px-3 py-1.5 rounded-full text-[10px] font-bold uppercase transition flex items-center space-x-1 shadow-sm ${
                 strictDealbreakers
-                  ? "bg-rose-950/70 text-rose-300 border border-rose-500/40"
-                  : "bg-white/[0.05] text-stone-500 border border-white/[0.08]"
+                  ? "bg-rose-50 text-[#711A31] border border-rose-200"
+                  : "bg-white text-stone-500 border border-stone-200"
               }`}
             >
               <span>{strictDealbreakers ? "⚡ Strict Filter ON" : "Filter OFF"}</span>
@@ -2018,16 +2055,16 @@ const Radar = () => {
           {/* MAIN PROFILE CARD STREAM */}
           <div className="w-full px-4 pt-3 flex flex-col space-y-4">
             {/* 1. Profile Header & Vitals Glass Card */}
-            <div className="bg-white/[0.05] backdrop-blur-2xl rounded-3xl p-5 border border-white/[0.12] shadow-xl">
+            <div className="bg-white/95 backdrop-blur-2xl rounded-[2rem] p-6 border border-stone-200/80 shadow-[0_12px_35px_rgba(0,0,0,0.04)]">
               <div className="flex justify-between items-baseline mb-1">
-                <h1 className="text-3xl font-black text-white tracking-tight font-serif flex items-center">
+                <h1 className="text-3xl font-black text-stone-900 tracking-tight font-serif flex items-center">
                   {currentProfile.name},{" "}
-                  <span className="font-normal text-stone-400 ml-1.5">
+                  <span className="font-normal text-stone-500 ml-1.5">
                     {currentProfile.age}
                   </span>
                   {currentProfile.isShieldVerified && (
                     <span
-                      className="ml-2 text-rose-400 text-base"
+                      className="ml-2 text-rose-600 text-base"
                       title="Shield Liveness Verified"
                     >
                       🛡️
@@ -2035,23 +2072,23 @@ const Radar = () => {
                   )}
                   {currentProfile.isWorkVerified && (
                     <span
-                      className="ml-1 text-sky-400 text-xs bg-sky-950/70 px-2 py-0.5 rounded-full border border-sky-400/30"
+                      className="ml-1 text-sky-700 text-xs bg-sky-50 px-2.5 py-0.5 rounded-full border border-sky-200 font-sans"
                       title="Workplace Verified"
                     >
                       💼 Verified
                     </span>
                   )}
                 </h1>
-                <span className="text-[11px] font-bold text-emerald-400 bg-emerald-950/60 px-2.5 py-0.5 rounded-full border border-emerald-500/30">
+                <span className="text-[11px] font-bold text-emerald-800 bg-emerald-50 px-3 py-1 rounded-full border border-emerald-200">
                   ● Active nearby
                 </span>
               </div>
 
               {/* Location & Pronouns */}
-              <div className="flex items-center text-xs font-semibold text-stone-400 space-x-2">
+              <div className="flex items-center text-xs font-semibold text-stone-500 space-x-2">
                 <span>{currentProfile.pronouns}</span>
                 <span>•</span>
-                <span className="text-rose-400 font-bold">
+                <span className="text-[#711A31] font-bold">
                   {calculatedDistance ? `${calculatedDistance} km away` : "Nearby (2.1 km)"}
                 </span>
                 <span>•</span>
@@ -2059,39 +2096,39 @@ const Radar = () => {
               </div>
 
               {/* Cultural & Lifestyle Vitals Badges Grid */}
-              <div className="flex flex-wrap gap-1.5 mt-3.5 pt-3.5 border-t border-white/[0.08]">
-                <span className="bg-rose-950/60 text-rose-200 text-[11px] font-bold px-3 py-1 rounded-full border border-rose-500/30">
+              <div className="flex flex-wrap gap-1.5 mt-4 pt-4 border-t border-stone-100">
+                <span className="bg-rose-50 text-[#711A31] text-[11px] font-bold px-3 py-1.5 rounded-full border border-rose-200 shadow-sm">
                   {currentProfile.relationshipIntent}
                 </span>
-                <span className="bg-emerald-950/60 text-emerald-200 text-[11px] font-bold px-3 py-1 rounded-full border border-emerald-500/30">
+                <span className="bg-emerald-50 text-emerald-800 text-[11px] font-bold px-3 py-1.5 rounded-full border border-emerald-200 shadow-sm">
                   {currentProfile.diet}
                 </span>
-                <span className="bg-white/[0.06] text-stone-300 text-[11px] font-semibold px-2.5 py-1 rounded-full border border-white/[0.1]">
+                <span className="bg-stone-50 text-stone-700 text-[11px] font-semibold px-3 py-1 rounded-full border border-stone-200">
                   {currentProfile.familyDynamic}
                 </span>
-                <span className="bg-white/[0.06] text-stone-300 text-[11px] font-semibold px-2.5 py-1 rounded-full border border-white/[0.1]">
+                <span className="bg-stone-50 text-stone-700 text-[11px] font-semibold px-3 py-1 rounded-full border border-stone-200">
                   {currentProfile.motherTongue}
                 </span>
-                <span className="bg-white/[0.06] text-stone-300 text-[11px] font-semibold px-2.5 py-1 rounded-full border border-white/[0.1]">
+                <span className="bg-stone-50 text-stone-700 text-[11px] font-semibold px-3 py-1 rounded-full border border-stone-200">
                   💼 {currentProfile.job}
                 </span>
-                <span className="bg-white/[0.06] text-stone-300 text-[11px] font-semibold px-2.5 py-1 rounded-full border border-white/[0.1]">
+                <span className="bg-stone-50 text-stone-700 text-[11px] font-semibold px-3 py-1 rounded-full border border-stone-200">
                   🎓 {currentProfile.education}
                 </span>
-                <span className="bg-white/[0.06] text-stone-300 text-[11px] font-semibold px-2.5 py-1 rounded-full border border-white/[0.1]">
+                <span className="bg-stone-50 text-stone-700 text-[11px] font-semibold px-3 py-1 rounded-full border border-stone-200">
                   📏 {currentProfile.height}
                 </span>
-                <span className="bg-white/[0.06] text-stone-300 text-[11px] font-semibold px-2.5 py-1 rounded-full border border-white/[0.1]">
+                <span className="bg-stone-50 text-stone-700 text-[11px] font-semibold px-3 py-1 rounded-full border border-stone-200">
                   {currentProfile.zodiac}
                 </span>
-                <span className="bg-white/[0.06] text-stone-300 text-[11px] font-semibold px-2.5 py-1 rounded-full border border-white/[0.1]">
+                <span className="bg-stone-50 text-stone-700 text-[11px] font-semibold px-3 py-1 rounded-full border border-stone-200">
                   {currentProfile.pets}
                 </span>
               </div>
             </div>
 
             {/* 2. PHOTO 1 (Lead Portrait + Micro-Vibe Audio Warmup) */}
-            <div className="w-full h-[470px] rounded-3xl overflow-hidden shadow-2xl relative bg-stone-900 border border-white/[0.12] group">
+            <div className="w-full h-[470px] rounded-[2rem] overflow-hidden shadow-[0_15px_35px_rgba(0,0,0,0.07)] relative bg-stone-100 border border-stone-200/80 group">
               <img
                 src={currentProfile.img1}
                 alt={currentProfile.name}
@@ -2101,7 +2138,7 @@ const Radar = () => {
                     : "filter blur-2xl scale-110 opacity-70"
                 }`}
               />
-              <div className="absolute top-4 left-4 bg-black/60 backdrop-blur-md text-white text-xs px-3 py-1 rounded-full border border-white/20">
+              <div className="absolute top-4 left-4 bg-black/60 backdrop-blur-md text-white text-xs px-3.5 py-1 rounded-full border border-white/20">
                 {currentProfile.img1Caption}
               </div>
 
@@ -2118,7 +2155,7 @@ const Radar = () => {
                   </p>
                   <button
                     onClick={() => handleToggleAudio(currentProfile.id)}
-                    className="bg-white text-[#711a31] font-black text-xs px-5 py-2.5 rounded-full shadow-lg hover:scale-105 active:scale-95 transition flex items-center space-x-1.5"
+                    className="bg-white text-[#711A31] font-black text-xs px-5 py-2.5 rounded-full shadow-lg hover:scale-105 active:scale-95 transition flex items-center space-x-1.5"
                   >
                     <span>🎙️</span>
                     <span>Listen to 15s Voice Note</span>
@@ -2130,7 +2167,7 @@ const Radar = () => {
                 onClick={() =>
                   handleOpenLikeModal("Lead Photo", currentProfile.img1Caption, currentProfile.img1)
                 }
-                className="absolute bottom-4 right-4 w-12 h-12 bg-white/90 hover:bg-white text-[#711a31] rounded-full shadow-2xl flex items-center justify-center hover:scale-110 active:scale-95 transition"
+                className="absolute bottom-4 right-4 w-12 h-12 bg-white text-[#711A31] border border-stone-200 rounded-full shadow-xl flex items-center justify-center hover:scale-110 active:scale-95 transition"
                 title="Like photo"
               >
                 <span className="text-xl">♥</span>
@@ -2138,11 +2175,11 @@ const Radar = () => {
             </div>
 
             {/* 3. PROMPT CARD 1 */}
-            <div className="bg-white/[0.05] backdrop-blur-2xl rounded-3xl p-6 border border-white/[0.12] shadow-xl relative">
-              <p className="text-[11px] font-black uppercase tracking-wider text-rose-300 mb-2">
+            <div className="bg-white/95 backdrop-blur-2xl rounded-[2rem] p-7 border border-stone-200/80 shadow-[0_12px_35px_rgba(0,0,0,0.04)] relative">
+              <p className="text-[11px] font-black uppercase tracking-wider text-[#711A31] mb-2">
                 {currentProfile.prompt1Label}
               </p>
-              <h2 className="text-2xl font-serif font-medium text-white leading-snug">
+              <h2 className="text-2xl font-serif font-medium text-stone-900 leading-snug">
                 "{currentProfile.prompt1Answer}"
               </h2>
 
@@ -2150,14 +2187,14 @@ const Radar = () => {
                 onClick={() =>
                   handleOpenLikeModal(currentProfile.prompt1Label, currentProfile.prompt1Answer)
                 }
-                className="absolute -bottom-4 right-6 w-11 h-11 bg-white text-[#711a31] rounded-full shadow-lg flex items-center justify-center hover:scale-105 active:scale-95 transition"
+                className="absolute -bottom-4 right-6 w-11 h-11 bg-white text-[#711A31] border border-stone-200 rounded-full shadow-md flex items-center justify-center hover:scale-105 active:scale-95 transition"
               >
-                <span className="text-base text-[#711a31]">♥</span>
+                <span className="text-base text-[#711A31]">♥</span>
               </button>
             </div>
 
             {/* 4. BLIND AUDIO WARMUP NOTE */}
-            <div className="bg-gradient-to-r from-[#711a31] via-[#8c223e] to-[#c2415d] rounded-3xl p-5 text-white shadow-xl relative overflow-hidden">
+            <div className="bg-gradient-to-r from-[#711A31] via-[#8c223e] to-[#c2415d] rounded-[2rem] p-6 text-white shadow-xl relative overflow-hidden">
               <div className="flex items-center justify-between mb-2">
                 <span className="text-[11px] uppercase font-black tracking-widest text-white/90 flex items-center">
                   <span className="mr-1.5">🎙️</span> Blind Audio Warmup
@@ -2174,7 +2211,7 @@ const Radar = () => {
               <div className="flex items-center space-x-3 bg-black/25 backdrop-blur-md rounded-2xl p-3 border border-white/10 mb-3">
                 <button
                   onClick={() => handleToggleAudio(currentProfile.id)}
-                  className="w-11 h-11 rounded-full bg-white text-[#711a31] font-black flex items-center justify-center shadow-md hover:scale-105 active:scale-95 transition shrink-0 text-base"
+                  className="w-11 h-11 rounded-full bg-white text-[#711A31] font-black flex items-center justify-center shadow-md hover:scale-105 active:scale-95 transition shrink-0 text-base"
                 >
                   {playingAudioId === currentProfile.id ? "❚❚" : "▶"}
                 </button>
@@ -2194,7 +2231,7 @@ const Radar = () => {
               {!isPhotoRevealed ? (
                 <button
                   onClick={() => handleApproveAudio(currentProfile.id)}
-                  className="w-full bg-white hover:bg-stone-100 text-[#711a31] font-black text-xs py-3 rounded-xl transition shadow-md flex items-center justify-center space-x-1.5 active:scale-95"
+                  className="w-full bg-white hover:bg-stone-50 text-[#711A31] font-black text-xs py-3 rounded-xl transition shadow-md flex items-center justify-center space-x-1.5 active:scale-95"
                 >
                   <span>✨ Approve Vibe & Unlock Full Photos</span>
                 </button>
@@ -2206,11 +2243,11 @@ const Radar = () => {
             </div>
 
             {/* 5. TWO TRUTHS & A LIE (INTERACTIVE ICEBREAKER GAME) */}
-            <div className="bg-white/[0.05] backdrop-blur-2xl rounded-3xl p-5 border border-white/[0.12] shadow-xl">
-              <span className="text-[10px] font-black uppercase text-amber-400 tracking-wider block mb-2">
+            <div className="bg-white/95 backdrop-blur-2xl rounded-[2rem] p-6 border border-stone-200/80 shadow-[0_12px_35px_rgba(0,0,0,0.04)]">
+              <span className="text-[10px] font-black uppercase text-amber-700 tracking-wider block mb-2">
                 🎮 Icebreaker Game • Two Truths & A Lie
               </span>
-              <p className="text-xs text-stone-300 mb-3 font-medium">
+              <p className="text-xs text-stone-500 mb-3 font-medium">
                 Guess which one is the lie to break the ice!
               </p>
               <div className="space-y-2">
@@ -2224,7 +2261,7 @@ const Radar = () => {
                         toast("That's actually true! Try another 🧐", { icon: "💡" });
                       }
                     }}
-                    className="w-full text-left bg-white/[0.04] hover:bg-white/[0.08] p-3 rounded-xl border border-white/[0.08] text-xs font-medium text-stone-200 transition"
+                    className="w-full text-left bg-stone-50 hover:bg-stone-100 p-3.5 rounded-xl border border-stone-200/80 text-xs font-medium text-stone-800 transition"
                   >
                     {idx + 1}. {stmt.replace(" (LIE!)", "")}
                   </button>
@@ -2233,7 +2270,7 @@ const Radar = () => {
             </div>
 
             {/* 6. PHOTO 2 & PROMPT 2 */}
-            <div className="w-full h-[430px] rounded-3xl overflow-hidden shadow-2xl relative bg-stone-900 border border-white/[0.12]">
+            <div className="w-full h-[430px] rounded-[2rem] overflow-hidden shadow-[0_15px_35px_rgba(0,0,0,0.07)] relative bg-stone-100 border border-stone-200/80">
               <img
                 src={currentProfile.img2}
                 alt={currentProfile.name}
@@ -2241,33 +2278,33 @@ const Radar = () => {
                   isPhotoRevealed ? "filter blur-0" : "filter blur-xl"
                 }`}
               />
-              <div className="absolute top-4 left-4 bg-black/60 backdrop-blur-md text-white text-xs px-3 py-1 rounded-full border border-white/20">
+              <div className="absolute top-4 left-4 bg-black/60 backdrop-blur-md text-white text-xs px-3.5 py-1 rounded-full border border-white/20">
                 {currentProfile.img2Caption}
               </div>
               <button
                 onClick={() =>
                   handleOpenLikeModal("Candid Photo", currentProfile.img2Caption, currentProfile.img2)
                 }
-                className="absolute bottom-4 right-4 w-12 h-12 bg-white/90 hover:bg-white text-[#711a31] rounded-full shadow-2xl flex items-center justify-center hover:scale-110 active:scale-95 transition"
+                className="absolute bottom-4 right-4 w-12 h-12 bg-white text-[#711A31] border border-stone-200 rounded-full shadow-xl flex items-center justify-center hover:scale-110 active:scale-95 transition"
               >
                 <span className="text-xl">♥</span>
               </button>
             </div>
 
-            <div className="bg-white/[0.05] backdrop-blur-2xl rounded-3xl p-6 border border-white/[0.12] shadow-xl relative">
-              <p className="text-[11px] font-black uppercase tracking-wider text-rose-300 mb-2">
+            <div className="bg-white/95 backdrop-blur-2xl rounded-[2rem] p-7 border border-stone-200/80 shadow-[0_12px_35px_rgba(0,0,0,0.04)] relative">
+              <p className="text-[11px] font-black uppercase tracking-wider text-[#711A31] mb-2">
                 {currentProfile.prompt2Label}
               </p>
-              <h2 className="text-2xl font-serif font-medium text-white leading-snug">
+              <h2 className="text-2xl font-serif font-medium text-stone-900 leading-snug">
                 "{currentProfile.prompt2Answer}"
               </h2>
               <button
                 onClick={() =>
                   handleOpenLikeModal(currentProfile.prompt2Label, currentProfile.prompt2Answer)
                 }
-                className="absolute -bottom-4 right-6 w-11 h-11 bg-white text-[#711a31] rounded-full shadow-lg flex items-center justify-center hover:scale-105 active:scale-95 transition"
+                className="absolute -bottom-4 right-6 w-11 h-11 bg-white text-[#711A31] border border-stone-200 rounded-full shadow-md flex items-center justify-center hover:scale-105 active:scale-95 transition"
               >
-                <span className="text-base text-[#711a31]">♥</span>
+                <span className="text-base text-[#711A31]">♥</span>
               </button>
             </div>
 
@@ -2275,7 +2312,7 @@ const Radar = () => {
             <div className="sticky bottom-20 w-full z-30 flex items-center justify-center space-x-3.5 py-3">
               <button
                 onClick={handleNextProfile}
-                className="w-14 h-14 rounded-full bg-white/[0.1] backdrop-blur-xl border border-white/[0.2] text-white shadow-2xl flex items-center justify-center hover:bg-white/[0.2] hover:scale-105 active:scale-95 transition text-2xl font-bold shrink-0"
+                className="w-14 h-14 rounded-full bg-white border border-stone-300 text-stone-700 shadow-xl flex items-center justify-center hover:bg-stone-50 hover:scale-105 active:scale-95 transition text-2xl font-bold shrink-0"
                 title="Pass profile"
               >
                 ✕
@@ -2283,7 +2320,7 @@ const Radar = () => {
 
               <button
                 onClick={() => handleSendRose(currentProfile)}
-                className="w-14 h-14 rounded-full bg-rose-950/80 backdrop-blur-xl border border-rose-500/50 text-rose-300 shadow-2xl flex items-center justify-center hover:bg-rose-900 hover:scale-105 active:scale-95 transition text-2xl font-bold shrink-0"
+                className="w-14 h-14 rounded-full bg-rose-50 border border-rose-200 text-[#711A31] shadow-xl flex items-center justify-center hover:bg-rose-100 hover:scale-105 active:scale-95 transition text-2xl font-bold shrink-0"
                 title="Send a Rose"
               >
                 🌹
@@ -2291,7 +2328,7 @@ const Radar = () => {
 
               <button
                 onClick={() => handleOpenLikeModal("Profile", "Sent a mutual like")}
-                className="flex-1 bg-gradient-to-r from-[#711a31] via-rose-600 to-amber-600 hover:opacity-95 text-white font-black py-4 px-6 rounded-full shadow-2xl flex items-center justify-center space-x-2 transition hover:scale-[1.02] active:scale-95 text-sm"
+                className="flex-1 bg-[#711A31] hover:bg-[#541223] text-white font-black py-4 px-6 rounded-full shadow-xl shadow-[#711A31]/25 flex items-center justify-center space-x-2 transition hover:scale-[1.01] active:scale-95 text-sm"
               >
                 <span>Connect & Lock Anti-Ghosting Slot</span>
               </button>
@@ -2305,14 +2342,35 @@ const Radar = () => {
          ========================================================================= */}
       {activeTab === "standouts" && (
         <div className="w-full max-w-4xl px-4 pt-4 flex flex-col space-y-4 z-10">
-          <div className="bg-white/[0.05] backdrop-blur-2xl rounded-3xl p-5 border border-white/[0.12] shadow-xl">
+          <div className="bg-white/95 backdrop-blur-2xl rounded-[2rem] p-6 border border-stone-200/80 shadow-[0_12px_35px_rgba(0,0,0,0.04)]">
             <div className="flex justify-between items-center mb-1">
-              <h2 className="text-2xl font-serif font-black text-white">Standouts</h2>
-              <span className="text-xs font-bold text-rose-300 bg-rose-950/70 px-3 py-1 rounded-full border border-rose-500/30 flex items-center">
-                <span className="mr-1">🌹</span> {rosesRemaining} Rose remaining
-              </span>
+              <div className="flex items-center space-x-2">
+                <h2 className="text-2xl font-serif font-black text-stone-900">Standouts</h2>
+                <button
+                  onClick={() =>
+                    toast("Curated daily based on prompt resonance and shared relationship values.", {
+                      icon: "💡",
+                    })
+                  }
+                  className="text-stone-400 hover:text-stone-700 transition"
+                  title="About Standouts"
+                >
+                  <Info className="w-4 h-4" />
+                </button>
+              </div>
+              <button
+                onClick={() =>
+                  toast("You get 1 free Rose every week to pin your profile to their top queue!", {
+                    icon: "🌹",
+                  })
+                }
+                className="text-xs font-bold text-[#241026] bg-[#BBA7BE] hover:bg-[#AE97B1] px-3.5 py-1.5 rounded-full border border-[#A68EA5]/40 shadow-sm flex items-center space-x-1.5 transition active:scale-95"
+              >
+                <span>🌹</span>
+                <span>Roses ({rosesRemaining})</span>
+              </button>
             </div>
-            <p className="text-xs text-stone-400 font-medium">
+            <p className="text-xs text-stone-600 font-medium leading-relaxed">
               Curated daily based on prompt resonance and shared relationship values. Sending a Rose pins you to the top of their queue.
             </p>
           </div>
@@ -2321,25 +2379,25 @@ const Radar = () => {
             {initialStandouts.map((standout) => (
               <div
                 key={standout.id}
-                className="bg-white/[0.05] backdrop-blur-2xl rounded-3xl overflow-hidden border border-white/[0.12] shadow-xl"
+                className="bg-white/95 backdrop-blur-2xl rounded-[2rem] overflow-hidden border border-stone-200/80 shadow-[0_12px_35px_rgba(0,0,0,0.04)] hover:shadow-[0_16px_40px_rgba(0,0,0,0.07)] transition duration-300"
               >
-                <div className="w-full h-72 relative bg-stone-900">
+                <div className="w-full h-72 relative bg-stone-100">
                   <img src={standout.img} alt={standout.name} className="w-full h-full object-cover" />
-                  <div className="absolute bottom-3 left-3 bg-black/70 backdrop-blur-md px-3 py-1 rounded-full text-white text-xs font-bold">
+                  <div className="absolute bottom-3 left-3 bg-black/65 backdrop-blur-md px-3.5 py-1 rounded-full text-white text-xs font-bold shadow-md">
                     {standout.name}, {standout.age} • {standout.city}
                   </div>
                 </div>
 
-                <div className="p-5">
-                  <p className="text-[10px] font-black uppercase text-rose-400 tracking-wider mb-1">
+                <div className="p-6">
+                  <p className="text-[11px] font-black uppercase text-[#711A31] tracking-wider mb-1">
                     {standout.promptLabel}
                   </p>
-                  <p className="font-serif text-lg font-medium text-white mb-4">
+                  <p className="font-serif text-lg font-medium text-stone-900 mb-5 leading-snug">
                     "{standout.promptAnswer}"
                   </p>
                   <button
                     onClick={() => handleSendRose(standout)}
-                    className="w-full bg-rose-950/70 hover:bg-rose-900 text-rose-200 border border-rose-500/40 font-extrabold text-xs py-3 rounded-2xl flex items-center justify-center space-x-1.5 transition active:scale-95"
+                    className="w-full bg-[#711A31] hover:bg-[#581426] text-white font-extrabold text-xs py-3.5 rounded-2xl shadow-md flex items-center justify-center space-x-1.5 transition active:scale-95"
                   >
                     <span>🌹</span>
                     <span>Send Rose & Jump to Top of Queue</span>
@@ -2356,44 +2414,41 @@ const Radar = () => {
          ========================================================================= */}
       {activeTab === "likes" && (
         <div className="w-full max-w-2xl px-4 pt-4 flex flex-col space-y-4 z-10">
-          <div className="bg-white/[0.05] backdrop-blur-2xl rounded-3xl p-5 border border-white/[0.12] shadow-xl">
-            <h2 className="text-2xl font-serif font-black text-white">Likes You</h2>
-            <p className="text-xs text-stone-400 font-medium mt-1">
+          <div className="bg-white/95 backdrop-blur-2xl rounded-[2rem] p-6 border border-stone-200/80 shadow-[0_12px_35px_rgba(0,0,0,0.04)]">
+            <h2 className="text-2xl font-serif font-black text-stone-900">Likes You</h2>
+            <p className="text-xs text-stone-600 font-medium mt-1 leading-relaxed">
               People who commented on your profile. Review them one by one with single-slot focus.
             </p>
           </div>
 
           {likesYouList.length === 0 ? (
-            <div className="bg-white/[0.05] backdrop-blur-2xl rounded-3xl p-10 text-center border border-white/[0.12] shadow-xl flex flex-col items-center">
-              <span className="text-4xl mb-3">💌</span>
-              <h3 className="font-serif text-lg font-bold text-white">All caught up!</h3>
-              <p className="text-xs text-stone-400 mt-1 max-w-xs">
-                Check back soon or explore verified candidates in Discover.
-              </p>
-            </div>
+            <HingeLikesYouEmpty
+              onBoostClick={() => toast.success("Boost activated for 1 hour! Profile prioritized.")}
+              onUpgradeClick={() => toast("HingeX subscription unlocked! Enjoy priority likes.", { icon: "✦" })}
+            />
           ) : (
             <div className="space-y-4">
               {likesYouList.map((like) => (
                 <div
                   key={like.id}
-                  className="bg-white/[0.05] backdrop-blur-2xl rounded-3xl overflow-hidden border border-white/[0.12] shadow-xl"
+                  className="bg-white/95 backdrop-blur-2xl rounded-[2rem] overflow-hidden border border-stone-200/80 shadow-[0_12px_35px_rgba(0,0,0,0.04)]"
                 >
-                  <div className="w-full h-72 relative bg-stone-900">
+                  <div className="w-full h-72 relative bg-stone-100">
                     <img src={like.img} alt={like.user} className="w-full h-full object-cover" />
-                    <div className="absolute top-3 right-3 bg-black/60 backdrop-blur-md text-rose-300 text-[10px] font-black px-2.5 py-1 rounded-full uppercase">
+                    <div className="absolute top-3 right-3 bg-white/90 backdrop-blur-md text-[#711A31] text-[10px] font-black px-3 py-1 rounded-full uppercase shadow-sm border border-stone-200/60">
                       {like.time}
                     </div>
-                    <div className="absolute bottom-3 left-3 bg-black/70 backdrop-blur-md px-3 py-1 rounded-full text-white text-xs font-bold">
+                    <div className="absolute bottom-3 left-3 bg-black/65 backdrop-blur-md px-3.5 py-1 rounded-full text-white text-xs font-bold shadow-md">
                       {like.user}, {like.age} • {like.job}
                     </div>
                   </div>
 
-                  <div className="p-5">
-                    <div className="bg-white/[0.04] rounded-2xl p-3.5 border border-white/[0.08] mb-4">
-                      <span className="text-[10px] font-black uppercase text-rose-400 tracking-wider block">
+                  <div className="p-6">
+                    <div className="bg-stone-50 rounded-2xl p-4 border border-stone-200/70 mb-5">
+                      <span className="text-[11px] font-black uppercase text-[#711A31] tracking-wider block">
                         Liked {like.likedItem}:
                       </span>
-                      <p className="text-sm font-serif italic text-white mt-1">
+                      <p className="text-sm font-serif italic text-stone-900 mt-1 leading-relaxed">
                         "{like.comment}"
                       </p>
                     </div>
@@ -2401,7 +2456,8 @@ const Radar = () => {
                     <div className="flex items-center space-x-3">
                       <button
                         onClick={() => setLikesYouList((l) => l.filter((x) => x.id !== like.id))}
-                        className="w-13 h-13 rounded-full border border-white/20 text-stone-400 font-bold hover:bg-white/10 flex items-center justify-center shrink-0 transition"
+                        className="w-12 h-12 rounded-full border border-stone-200 bg-white text-stone-500 font-bold hover:bg-stone-100 flex items-center justify-center shrink-0 shadow-sm transition"
+                        title="Pass"
                       >
                         ✕
                       </button>
@@ -2424,9 +2480,9 @@ const Radar = () => {
                             ...prev,
                           ]);
                           setLikesYouList((prev) => prev.filter((l) => l.id !== like.id));
-                          navigate(`/chat/${like.id}`);
+                          router.push(`/chat/${like.id}`);
                         }}
-                        className="flex-1 bg-gradient-to-r from-[#711a31] to-rose-600 text-white font-extrabold text-xs py-3.5 rounded-full shadow-md transition"
+                        className="flex-1 bg-[#711A31] hover:bg-[#581426] text-white font-extrabold text-xs py-3.5 rounded-full shadow-md transition active:scale-95"
                       >
                         Match & Start Chatting
                       </button>
@@ -2444,65 +2500,65 @@ const Radar = () => {
          ========================================================================= */}
       {activeTab === "matches" && (
         <div className="w-full max-w-3xl px-4 pt-4 flex flex-col space-y-4 z-10">
-          <div className="bg-white/[0.05] backdrop-blur-2xl rounded-3xl p-5 border border-white/[0.12] shadow-xl">
-            <h2 className="text-2xl font-serif font-black text-white">Conversations</h2>
-            <p className="text-xs text-stone-400 font-medium mt-1">
+          <div className="bg-white/95 backdrop-blur-2xl rounded-[2rem] p-6 border border-stone-200/80 shadow-[0_12px_35px_rgba(0,0,0,0.04)]">
+            <h2 className="text-2xl font-serif font-black text-stone-900">Conversations</h2>
+            <p className="text-xs text-stone-600 font-medium mt-1 leading-relaxed">
               "Your Turn" queue backed by the 48-Hour Anti-Ghosting Accountability Clock.
             </p>
           </div>
 
           {/* Your Turn Queue */}
-          <div className="bg-white/[0.05] backdrop-blur-2xl rounded-3xl p-4 border border-white/[0.12] shadow-xl">
-            <span className="text-[10px] font-black uppercase text-rose-300 tracking-wider block mb-3">
+          <div className="bg-white/95 backdrop-blur-2xl rounded-[2rem] p-6 border border-stone-200/80 shadow-[0_12px_35px_rgba(0,0,0,0.04)]">
+            <span className="text-[11px] font-black uppercase text-[#711A31] tracking-wider block mb-3">
               Your Turn ({matchesList.length})
             </span>
-            <div className="flex space-x-3.5 overflow-x-auto scrollbar-hide py-1">
+            <div className="flex space-x-4 overflow-x-auto scrollbar-hide py-1">
               {matchesList.map((m) => (
                 <div
                   key={m.id}
-                  onClick={() => navigate(`/chat/${m.id}`)}
+                  onClick={() => router.push(`/chat/${m.id}`)}
                   className="flex flex-col items-center cursor-pointer shrink-0 group"
                 >
                   <div className="relative">
                     <img
                       src={m.avatar}
                       alt={m.name}
-                      className="w-14 h-14 rounded-full object-cover border-2 border-rose-400 shadow-lg group-hover:scale-105 transition"
+                      className="w-14 h-14 rounded-full object-cover border-2 border-[#711A31] shadow-md group-hover:scale-105 transition"
                     />
-                    <div className="absolute -bottom-1 -right-1 bg-rose-600 text-white w-4 h-4 rounded-full flex items-center justify-center text-[9px] border-2 border-[#0a090e]">
+                    <div className="absolute -bottom-1 -right-1 bg-[#711A31] text-white w-4 h-4 rounded-full flex items-center justify-center text-[9px] border-2 border-white shadow-sm">
                       💬
                     </div>
                   </div>
-                  <span className="text-xs font-bold text-white mt-1">{m.name}</span>
+                  <span className="text-xs font-bold text-stone-900 mt-1.5">{m.name}</span>
                 </div>
               ))}
             </div>
           </div>
 
           {/* Conversations List with Anti-Ghosting Timer & Date Pass */}
-          <div className="bg-white/[0.05] backdrop-blur-2xl rounded-3xl divide-y divide-white/[0.08] border border-white/[0.12] shadow-xl overflow-hidden">
+          <div className="bg-white/95 backdrop-blur-2xl rounded-[2rem] divide-y divide-stone-100 border border-stone-200/80 shadow-[0_12px_35px_rgba(0,0,0,0.04)] overflow-hidden">
             {matchesList.map((m) => (
-              <div key={m.id} className="p-4 flex flex-col space-y-3 hover:bg-white/[0.04] transition">
+              <div key={m.id} className="p-5 flex flex-col space-y-3.5 hover:bg-stone-50/70 transition">
                 <div
-                  onClick={() => navigate(`/chat/${m.id}`)}
+                  onClick={() => router.push(`/chat/${m.id}`)}
                   className="flex items-center space-x-3.5 cursor-pointer"
                 >
-                  <img src={m.avatar} alt={m.name} className="w-13 h-13 rounded-full object-cover shrink-0" />
+                  <img src={m.avatar} alt={m.name} className="w-13 h-13 rounded-full object-cover shrink-0 shadow-sm" />
                   <div className="flex-1 min-w-0">
                     <div className="flex justify-between items-baseline">
-                      <h4 className="text-sm font-bold text-white truncate">
+                      <h4 className="text-sm font-bold text-stone-900 truncate">
                         {m.name}, {m.age}
                       </h4>
-                      <span className="text-[10px] text-stone-400 font-medium">{m.time}</span>
+                      <span className="text-[10px] text-stone-500 font-medium">{m.time}</span>
                     </div>
-                    <p className="text-xs text-stone-300 truncate mt-0.5">{m.lastMessage}</p>
+                    <p className="text-xs text-stone-600 truncate mt-0.5">{m.lastMessage}</p>
                   </div>
-                  {m.unread && <span className="w-2.5 h-2.5 rounded-full bg-rose-500 shrink-0"></span>}
+                  {m.unread && <span className="w-2.5 h-2.5 rounded-full bg-[#711A31] shrink-0"></span>}
                 </div>
 
                 {/* Safe Date & Accountability Actions */}
-                <div className="flex items-center justify-between pt-2 border-t border-white/[0.06] text-xs">
-                  <span className="text-[11px] font-bold text-amber-300 bg-amber-950/60 px-2.5 py-0.5 rounded-full border border-amber-500/30 flex items-center">
+                <div className="flex items-center justify-between pt-2.5 border-t border-stone-100 text-xs">
+                  <span className="text-[11px] font-bold text-amber-800 bg-amber-50 px-3 py-1 rounded-full border border-amber-200 flex items-center shadow-sm">
                     ⏰ {m.hoursRemaining}h to reply
                   </span>
 
@@ -2510,7 +2566,7 @@ const Radar = () => {
                     {/* Plan Date at Partner Cafe */}
                     <button
                       onClick={() => setShowDatePlanModal(m)}
-                      className="text-[11px] bg-rose-950/70 hover:bg-rose-900 text-rose-200 px-3 py-1 rounded-full border border-rose-500/30 font-bold transition flex items-center space-x-1"
+                      className="text-[11px] bg-rose-50 hover:bg-rose-100 text-[#711A31] px-3.5 py-1 rounded-full border border-rose-200 font-bold transition flex items-center space-x-1 shadow-sm"
                     >
                       <span>☕ Plan Date</span>
                     </button>
@@ -2518,7 +2574,7 @@ const Radar = () => {
                     {/* Emergency Date SOS Share */}
                     <button
                       onClick={() => handleEmergencySos(m)}
-                      className="text-[11px] bg-white/[0.08] hover:bg-white/[0.15] text-stone-300 px-2.5 py-1 rounded-full border border-white/[0.15] font-bold transition"
+                      className="text-[11px] bg-stone-100 hover:bg-stone-200 text-stone-700 px-3 py-1 rounded-full border border-stone-200 font-bold transition shadow-sm"
                       title="Share Date Safety Details with Friends"
                     >
                       🛡️ SOS
@@ -2527,7 +2583,7 @@ const Radar = () => {
                     {/* Polite Closure */}
                     <button
                       onClick={() => setShowClosureModal(m)}
-                      className="text-[11px] text-stone-500 hover:text-stone-300 px-1"
+                      className="text-[11px] text-stone-400 hover:text-stone-600 px-1"
                       title="Polite Closure / Unmatch"
                     >
                       ✕
@@ -2545,17 +2601,17 @@ const Radar = () => {
          ========================================================================= */}
       {activeTab === "cafes" && (
         <div className="w-full max-w-4xl px-4 pt-4 flex flex-col space-y-4 z-10">
-          <div className="bg-white/[0.05] backdrop-blur-2xl rounded-3xl p-5 border border-white/[0.12] shadow-xl">
+          <div className="bg-white/95 backdrop-blur-2xl rounded-[2rem] p-6 border border-stone-200/80 shadow-[0_12px_35px_rgba(0,0,0,0.04)]">
             <div className="flex justify-between items-center mb-1">
-              <h2 className="text-2xl font-serif font-black text-white">Date-NearMe IRL</h2>
+              <h2 className="text-2xl font-serif font-black text-stone-900">Date-NearMe IRL</h2>
               <button
                 onClick={() => setShowPartnerJoinModal(true)}
-                className="bg-gradient-to-r from-[#711a31] to-rose-600 text-white text-[11px] font-black px-3 py-1.5 rounded-full shadow-md"
+                className="bg-[#711A31] hover:bg-[#581426] text-white text-[11px] font-extrabold px-4 py-2 rounded-full shadow-md transition active:scale-95"
               >
                 + Partner Your Cafe
               </button>
             </div>
-            <p className="text-xs text-stone-400 font-medium">
+            <p className="text-xs text-stone-600 font-medium leading-relaxed">
               Verified safe date cafes. Show your NearMe Date Pass at the counter for exclusive couple perks!
             </p>
           </div>
@@ -2565,27 +2621,29 @@ const Radar = () => {
             {partnerCafes.map((cafe) => (
               <div
                 key={cafe.id}
-                className="bg-white/[0.05] backdrop-blur-2xl rounded-3xl p-5 border border-white/[0.12] shadow-xl flex flex-col space-y-3"
+                className="bg-white/95 backdrop-blur-2xl rounded-[2rem] p-6 border border-stone-200/80 shadow-[0_12px_35px_rgba(0,0,0,0.04)] hover:shadow-[0_16px_40px_rgba(0,0,0,0.07)] transition duration-300 flex flex-col space-y-3.5"
               >
                 <div className="flex justify-between items-start">
                   <div>
-                    <h3 className="font-serif text-lg font-bold text-white flex items-center">
+                    <h3 className="font-serif text-lg font-bold text-stone-900 flex items-center">
                       {cafe.name}
-                      <span className="ml-2 text-emerald-400 text-xs">✓ Verified</span>
+                      <span className="ml-2 text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded-full text-xs font-sans border border-emerald-200">
+                        ✓ Verified
+                      </span>
                     </h3>
-                    <p className="text-xs text-stone-400">{cafe.address || cafe.city}</p>
+                    <p className="text-xs text-stone-500 mt-0.5">{cafe.address || cafe.city}</p>
                   </div>
-                  <span className="text-xs font-bold text-amber-400 bg-amber-950/60 px-2.5 py-0.5 rounded-full border border-amber-500/30">
+                  <span className="text-xs font-bold text-amber-800 bg-amber-50 px-2.5 py-0.5 rounded-full border border-amber-200 shadow-sm">
                     {cafe.rating || "4.8 ★"}
                   </span>
                 </div>
 
-                <div className="bg-rose-950/50 rounded-2xl p-3 border border-rose-500/30 flex items-center justify-between">
+                <div className="bg-rose-50/80 rounded-2xl p-4 border border-rose-200/80 flex items-center justify-between">
                   <div>
-                    <span className="text-[10px] font-black uppercase text-rose-300 tracking-wider block">
+                    <span className="text-[10px] font-black uppercase text-[#711A31] tracking-wider block">
                       Couple Exclusive Offer
                     </span>
-                    <p className="text-xs font-bold text-white mt-0.5">
+                    <p className="text-xs font-bold text-stone-900 mt-0.5">
                       {cafe.discountOffer || cafe.discount_offer}
                     </p>
                   </div>
@@ -2597,7 +2655,7 @@ const Radar = () => {
                     onClick={() => {
                       toast.success(`Date Pass created for ${cafe.name}! Show token at table: ${cafe.qrCodeToken || cafe.qr_code_token}`);
                     }}
-                    className="flex-1 bg-white/[0.08] hover:bg-white/[0.15] text-white font-bold text-xs py-2.5 rounded-xl border border-white/[0.15] transition"
+                    className="flex-1 bg-stone-100 hover:bg-stone-200 text-stone-800 font-bold text-xs py-2.5 rounded-xl border border-stone-200 transition"
                   >
                     View Date Pass Token
                   </button>
@@ -2605,7 +2663,7 @@ const Radar = () => {
                     href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(cafe.name + " " + cafe.city)}`}
                     target="_blank"
                     rel="noreferrer"
-                    className="px-4 py-2.5 bg-rose-950/70 hover:bg-rose-900 text-rose-200 text-xs font-bold rounded-xl border border-rose-500/30 transition text-center"
+                    className="px-4 py-2.5 bg-[#711A31] hover:bg-[#581426] text-white text-xs font-bold rounded-xl shadow-sm transition text-center"
                   >
                     📍 Maps
                   </a>
@@ -2621,44 +2679,44 @@ const Radar = () => {
          ========================================================================= */}
       {activeTab === "affiliate" && (
         <div className="w-full max-w-3xl px-4 pt-4 flex flex-col space-y-4 z-10">
-          <div className="bg-white/[0.05] backdrop-blur-2xl rounded-3xl p-5 border border-white/[0.12] shadow-xl">
-            <h2 className="text-2xl font-serif font-black text-white">Affiliate Partner Hub</h2>
-            <p className="text-xs text-stone-400 font-medium mt-1">
-              Earn <span className="text-amber-300 font-bold">₹30 (30% reward)</span> for every single friend or cafe customer who joins Date-NearMe via your link or QR code!
+          <div className="bg-white/95 backdrop-blur-2xl rounded-[2rem] p-6 border border-stone-200/80 shadow-[0_12px_35px_rgba(0,0,0,0.04)]">
+            <h2 className="text-2xl font-serif font-black text-stone-900">Affiliate Partner Hub</h2>
+            <p className="text-xs text-stone-600 font-medium mt-1 leading-relaxed">
+              Earn <span className="text-[#711A31] font-bold">₹30 (30% reward)</span> for every single friend or cafe customer who joins Date-NearMe via your link or QR code!
             </p>
           </div>
 
           {/* Earnings Cards */}
           <div className="grid grid-cols-2 gap-3">
-            <div className="bg-white/[0.05] backdrop-blur-2xl rounded-2xl p-4 border border-white/[0.12]">
-              <span className="text-[10px] font-black uppercase text-stone-400 tracking-wider block">
+            <div className="bg-white/95 backdrop-blur-2xl rounded-2xl p-5 border border-stone-200/80 shadow-[0_8px_25px_rgba(0,0,0,0.03)]">
+              <span className="text-[10px] font-black uppercase text-stone-500 tracking-wider block">
                 Total Earned
               </span>
-              <span className="text-2xl font-black text-amber-300 mt-1 block">
+              <span className="text-2xl font-black text-[#711A31] mt-1 block">
                 ₹{affiliateStats.affiliateBalance}
               </span>
-              <span className="text-[10px] text-emerald-400 font-medium">Ready to withdraw</span>
+              <span className="text-[10px] text-emerald-700 font-medium">Ready to withdraw</span>
             </div>
 
-            <div className="bg-white/[0.05] backdrop-blur-2xl rounded-2xl p-4 border border-white/[0.12]">
-              <span className="text-[10px] font-black uppercase text-stone-400 tracking-wider block">
+            <div className="bg-white/95 backdrop-blur-2xl rounded-2xl p-5 border border-stone-200/80 shadow-[0_8px_25px_rgba(0,0,0,0.03)]">
+              <span className="text-[10px] font-black uppercase text-stone-500 tracking-wider block">
                 Total Conversions
               </span>
-              <span className="text-2xl font-black text-white mt-1 block">
+              <span className="text-2xl font-black text-stone-900 mt-1 block">
                 {affiliateStats.totalReferrals}
               </span>
-              <span className="text-[10px] text-stone-400 font-medium">Paid members joined</span>
+              <span className="text-[10px] text-stone-500 font-medium">Paid members joined</span>
             </div>
           </div>
 
           {/* Table Standee QR Code Preview Card */}
-          <div className="bg-white/[0.05] backdrop-blur-2xl rounded-3xl p-6 border border-white/[0.12] shadow-xl text-center flex flex-col items-center">
-            <span className="text-[10px] font-black uppercase text-rose-400 tracking-wider mb-2">
+          <div className="bg-white/95 backdrop-blur-2xl rounded-[2rem] p-6 border border-stone-200/80 shadow-[0_12px_35px_rgba(0,0,0,0.04)] text-center flex flex-col items-center">
+            <span className="text-[11px] font-black uppercase text-[#711A31] tracking-wider mb-2">
               Your Scannable Table Standee / QR Code
             </span>
 
             {/* Live QR Code Generator SVG */}
-            <div className="w-48 h-48 bg-white p-3 rounded-2xl shadow-2xl flex items-center justify-center mb-3 border-4 border-rose-500/30">
+            <div className="w-48 h-48 bg-white p-3 rounded-2xl shadow-md flex items-center justify-center mb-3 border-4 border-rose-100">
               <img
                 src={`https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(
                   `https://date-nearme.com/register?ref=${affiliateStats.affiliateCode}`
@@ -2668,14 +2726,14 @@ const Radar = () => {
               />
             </div>
 
-            <p className="text-xs font-mono text-stone-300 font-bold mb-3">
-              Code: <span className="text-rose-400">{affiliateStats.affiliateCode}</span>
+            <p className="text-xs font-mono text-stone-600 font-bold mb-3">
+              Code: <span className="text-[#711A31]">{affiliateStats.affiliateCode}</span>
             </p>
 
             <div className="w-full flex space-x-2">
               <button
                 onClick={copyReferralLink}
-                className="flex-1 bg-white/[0.08] hover:bg-white/[0.15] text-white font-bold text-xs py-3 rounded-xl border border-white/[0.15] transition"
+                className="flex-1 bg-stone-100 hover:bg-stone-200 text-stone-800 font-bold text-xs py-3 rounded-xl border border-stone-200 transition"
               >
                 📋 Copy Link
               </button>
@@ -2686,7 +2744,7 @@ const Radar = () => {
                 download="Date-NearMe-QR-Standee.png"
                 target="_blank"
                 rel="noreferrer"
-                className="flex-1 bg-gradient-to-r from-[#711a31] to-rose-600 text-white font-extrabold text-xs py-3 rounded-xl shadow-md transition text-center flex items-center justify-center space-x-1"
+                className="flex-1 bg-[#711A31] hover:bg-[#581426] text-white font-extrabold text-xs py-3 rounded-xl shadow-md transition text-center flex items-center justify-center space-x-1"
               >
                 <span>💾 Save QR</span>
               </a>
@@ -2694,11 +2752,11 @@ const Radar = () => {
           </div>
 
           {/* UPI Payout Request Form */}
-          <div className="bg-white/[0.05] backdrop-blur-2xl rounded-3xl p-5 border border-white/[0.12] shadow-xl">
-            <h3 className="font-serif font-bold text-base text-white mb-2">
+          <div className="bg-white/95 backdrop-blur-2xl rounded-[2rem] p-6 border border-stone-200/80 shadow-[0_12px_35px_rgba(0,0,0,0.04)]">
+            <h3 className="font-serif font-bold text-base text-stone-900 mb-1">
               Withdraw Earnings via UPI
             </h3>
-            <p className="text-xs text-stone-400 mb-4">
+            <p className="text-xs text-stone-600 mb-4">
               Enter your Google Pay, PhonePe, or BHIM UPI ID to instantly transfer earnings.
             </p>
 
@@ -2709,12 +2767,12 @@ const Radar = () => {
                 value={withdrawUpiInput}
                 onChange={(e) => setWithdrawUpiInput(e.target.value)}
                 placeholder="e.g. yourname@okhdfcbank"
-                className="w-full bg-white/[0.05] border border-white/[0.15] text-white rounded-xl px-4 py-3 text-xs font-mono focus:outline-none focus:border-rose-400"
+                className="w-full bg-stone-50 border border-stone-200 text-stone-900 rounded-xl px-4 py-3 text-xs font-mono focus:outline-none focus:border-[#711A31]"
               />
               <button
                 type="submit"
                 disabled={isWithdrawing || affiliateStats.affiliateBalance < 30}
-                className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-black text-xs py-3 rounded-xl shadow-lg transition active:scale-95 disabled:opacity-50"
+                className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-black text-xs py-3.5 rounded-xl shadow-md transition active:scale-95 disabled:opacity-50"
               >
                 {isWithdrawing
                   ? "Processing..."
@@ -2731,21 +2789,21 @@ const Radar = () => {
       {activeTab === "profile" && (
         <div className="w-full max-w-2xl px-4 pt-4 flex flex-col space-y-4 z-10">
           {/* Profile Header */}
-          <div className="bg-white/[0.05] backdrop-blur-2xl rounded-3xl p-6 border border-white/[0.12] shadow-xl text-center flex flex-col items-center">
-            <div className="w-20 h-20 rounded-full bg-gradient-to-tr from-[#711a31] to-amber-500 text-white flex items-center justify-center text-3xl font-serif font-black shadow-lg border-2 border-white/30 mb-3">
+          <div className="bg-white/95 backdrop-blur-2xl rounded-[2rem] p-6 border border-stone-200/80 shadow-[0_12px_35px_rgba(0,0,0,0.04)] text-center flex flex-col items-center">
+            <div className="w-20 h-20 rounded-full bg-gradient-to-tr from-[#711a31] to-rose-600 text-white flex items-center justify-center text-3xl font-serif font-black shadow-md border-2 border-white mb-3">
               {(profileForm.displayName?.[0] || user?.email?.[0] || "U").toUpperCase()}
             </div>
-            <h2 className="text-2xl font-serif font-bold text-white">
+            <h2 className="text-2xl font-serif font-bold text-stone-900">
               {profileForm.displayName || "My Profile"}
             </h2>
-            <p className="text-xs text-stone-400 font-medium">{user?.email}</p>
+            <p className="text-xs text-stone-500 font-medium">{user?.email}</p>
 
             <div className="flex flex-wrap items-center justify-center gap-2 mt-3">
-              <span className="text-[11px] font-bold text-emerald-300 bg-emerald-950/60 px-3 py-1 rounded-full border border-emerald-500/30">
+              <span className="text-[11px] font-bold text-amber-800 bg-amber-50 px-3 py-1 rounded-full border border-amber-200 shadow-sm">
                 👑 Lifetime Access Active
               </span>
               {user?.isShieldVerified && (
-                <span className="text-[11px] font-bold text-rose-300 bg-rose-950/60 px-3 py-1 rounded-full border border-rose-500/30">
+                <span className="text-[11px] font-bold text-[#711A31] bg-rose-50 px-3 py-1 rounded-full border border-rose-200 shadow-sm">
                   🛡️ Shield Verified
                 </span>
               )}
@@ -2753,43 +2811,43 @@ const Radar = () => {
           </div>
 
           {/* VERIFICATION SHIELD ACTIONS (TRACK 1) */}
-          <div className="bg-white/[0.05] backdrop-blur-2xl rounded-3xl p-5 border border-white/[0.12] shadow-xl space-y-3">
-            <h3 className="font-serif font-bold text-base text-white">
+          <div className="bg-white/95 backdrop-blur-2xl rounded-[2rem] p-6 border border-stone-200/80 shadow-[0_12px_35px_rgba(0,0,0,0.04)] space-y-3">
+            <h3 className="font-serif font-bold text-base text-stone-900">
               Trust & Safety Badges
             </h3>
-            <p className="text-xs text-stone-400">
+            <p className="text-xs text-stone-600 leading-relaxed">
               Increase match quality by 300% by proving you are genuine and safe.
             </p>
 
             <div className="space-y-2 pt-1">
               <button
                 onClick={() => setShowSelfieModal(true)}
-                className="w-full bg-white/[0.06] hover:bg-white/[0.1] text-white p-3 rounded-2xl border border-white/[0.1] flex items-center justify-between text-xs transition"
+                className="w-full bg-stone-50 hover:bg-stone-100/80 text-stone-900 p-3.5 rounded-2xl border border-stone-200 flex items-center justify-between text-xs transition shadow-sm"
               >
-                <div className="flex items-center space-x-2.5">
+                <div className="flex items-center space-x-3">
                   <span className="text-xl">🛡️</span>
                   <div className="text-left">
                     <span className="font-bold block">Selfie Liveness Verification</span>
-                    <span className="text-[10px] text-stone-400">1-click camera face match</span>
+                    <span className="text-[10px] text-stone-500">1-click camera face match</span>
                   </div>
                 </div>
-                <span className="text-rose-400 font-bold">
+                <span className="text-[#711A31] font-bold">
                   {user?.isShieldVerified ? "✓ Verified" : "Verify →"}
                 </span>
               </button>
 
               <button
                 onClick={() => setShowWorkVerifyModal(true)}
-                className="w-full bg-white/[0.06] hover:bg-white/[0.1] text-white p-3 rounded-2xl border border-white/[0.1] flex items-center justify-between text-xs transition"
+                className="w-full bg-stone-50 hover:bg-stone-100/80 text-stone-900 p-3.5 rounded-2xl border border-stone-200 flex items-center justify-between text-xs transition shadow-sm"
               >
-                <div className="flex items-center space-x-2.5">
+                <div className="flex items-center space-x-3">
                   <span className="text-xl">💼</span>
                   <div className="text-left">
                     <span className="font-bold block">Work / College Verification</span>
-                    <span className="text-[10px] text-stone-400">Verify company domain without exposing salary</span>
+                    <span className="text-[10px] text-stone-500">Verify company domain without exposing salary</span>
                   </div>
                 </div>
-                <span className="text-sky-400 font-bold">
+                <span className="text-sky-700 font-bold">
                   {user?.isWorkVerified ? "✓ Verified" : "Verify →"}
                 </span>
               </button>
@@ -2797,14 +2855,14 @@ const Radar = () => {
           </div>
 
           {/* EDIT PROFILE & MOBILE NUMBER */}
-          <div className="bg-white/[0.05] backdrop-blur-2xl rounded-3xl p-5 border border-white/[0.12] shadow-xl">
-            <h3 className="text-base font-serif font-bold text-white mb-3">
+          <div className="bg-white/95 backdrop-blur-2xl rounded-[2rem] p-6 border border-stone-200/80 shadow-[0_12px_35px_rgba(0,0,0,0.04)]">
+            <h3 className="text-base font-serif font-bold text-stone-900 mb-3">
               Account Details & Mobile Number
             </h3>
 
             <form onSubmit={handleSaveProfile} className="space-y-3.5">
               <div>
-                <label className="block text-xs font-bold uppercase text-stone-300 mb-1">
+                <label className="block text-xs font-bold uppercase text-stone-700 mb-1">
                   Full Name / Display Name
                 </label>
                 <input
@@ -2813,17 +2871,17 @@ const Radar = () => {
                   onChange={(e) =>
                     setProfileForm({ ...profileForm, displayName: e.target.value })
                   }
-                  className="w-full bg-white/[0.05] border border-white/[0.15] rounded-xl px-4 py-2.5 text-xs text-white focus:outline-none focus:border-rose-400"
+                  className="w-full bg-stone-50 border border-stone-200 rounded-xl px-4 py-2.5 text-xs text-stone-900 focus:outline-none focus:border-[#711A31]"
                   placeholder="e.g. Priya Sharma"
                 />
               </div>
 
               <div>
                 <div className="flex justify-between items-center mb-1">
-                  <label className="block text-xs font-bold uppercase text-stone-300">
+                  <label className="block text-xs font-bold uppercase text-stone-700">
                     Mobile Number
                   </label>
-                  <span className="text-[10px] text-emerald-400 font-bold">
+                  <span className="text-[10px] text-emerald-700 font-bold">
                     Stored in Database
                   </span>
                 </div>
@@ -2833,19 +2891,19 @@ const Radar = () => {
                   onChange={(e) =>
                     setProfileForm({ ...profileForm, phoneNumber: e.target.value })
                   }
-                  className="w-full bg-white/[0.05] border border-white/[0.15] rounded-xl px-4 py-2.5 text-xs text-white font-mono focus:outline-none focus:border-rose-400"
+                  className="w-full bg-stone-50 border border-stone-200 rounded-xl px-4 py-2.5 text-xs text-stone-900 font-mono focus:outline-none focus:border-[#711A31]"
                   placeholder="+91 98765 43210"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-bold uppercase text-stone-300 mb-1">
+                <label className="block text-xs font-bold uppercase text-stone-700 mb-1">
                   Dietary Habit
                 </label>
                 <select
                   value={profileForm.diet}
                   onChange={(e) => setProfileForm({ ...profileForm, diet: e.target.value })}
-                  className="w-full bg-[#1c1827] border border-white/[0.15] rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-rose-400"
+                  className="w-full bg-stone-50 border border-stone-200 rounded-xl px-3 py-2.5 text-xs text-stone-900 focus:outline-none focus:border-[#711A31]"
                 >
                   <option value="Pure Veg">Pure Veg</option>
                   <option value="Jain">Strict Jain</option>
@@ -2856,7 +2914,7 @@ const Radar = () => {
               </div>
 
               <div>
-                <label className="block text-xs font-bold uppercase text-stone-300 mb-1">
+                <label className="block text-xs font-bold uppercase text-stone-700 mb-1">
                   Relationship Goal
                 </label>
                 <select
@@ -2864,7 +2922,7 @@ const Radar = () => {
                   onChange={(e) =>
                     setProfileForm({ ...profileForm, relationshipIntent: e.target.value })
                   }
-                  className="w-full bg-[#1c1827] border border-white/[0.15] rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-rose-400"
+                  className="w-full bg-stone-50 border border-stone-200 rounded-xl px-3 py-2.5 text-xs text-stone-900 focus:outline-none focus:border-[#711A31]"
                 >
                   <option value="Dating for Marriage (1-2 Years)">
                     💍 Dating for Marriage (1-2 Years)
@@ -2882,10 +2940,10 @@ const Radar = () => {
               </div>
 
               {/* Incognito Ghost Mode Toggle */}
-              <div className="flex items-center justify-between p-3 rounded-xl bg-white/[0.04] border border-white/[0.08]">
+              <div className="flex items-center justify-between p-3.5 rounded-xl bg-stone-50 border border-stone-200">
                 <div>
-                  <span className="text-xs font-bold text-white block">Ghost / Incognito Mode</span>
-                  <span className="text-[10px] text-stone-400">
+                  <span className="text-xs font-bold text-stone-900 block">Ghost / Incognito Mode</span>
+                  <span className="text-[10px] text-stone-500">
                     Hide profile from phone contacts & browse privately
                   </span>
                 </div>
@@ -2895,14 +2953,14 @@ const Radar = () => {
                   onChange={(e) =>
                     setProfileForm({ ...profileForm, incognitoMode: e.target.checked })
                   }
-                  className="w-4 h-4 accent-rose-500 rounded cursor-pointer"
+                  className="w-4 h-4 accent-[#711A31] rounded cursor-pointer"
                 />
               </div>
 
               <button
                 type="submit"
                 disabled={isSavingProfile}
-                className="w-full bg-gradient-to-r from-[#711a31] to-rose-600 text-white font-extrabold text-xs py-3 rounded-xl shadow-lg transition active:scale-95 disabled:opacity-70"
+                className="w-full bg-[#711A31] hover:bg-[#581426] text-white font-extrabold text-xs py-3.5 rounded-xl shadow-md transition active:scale-95 disabled:opacity-70"
               >
                 {isSavingProfile ? "Saving to Database..." : "Save Details to Database"}
               </button>
@@ -2913,10 +2971,10 @@ const Radar = () => {
           <button
             onClick={() => {
               logout();
-              navigate("/login");
+              router.push("/login");
               toast.success("Logged out successfully.");
             }}
-            className="w-full bg-red-950/60 hover:bg-red-900/80 text-red-200 font-extrabold text-xs py-3.5 rounded-2xl border border-red-500/30 transition active:scale-95"
+            className="w-full bg-rose-50 hover:bg-rose-100 text-[#711A31] font-extrabold text-xs py-3.5 rounded-2xl border border-rose-200 transition active:scale-95 shadow-sm"
           >
             Log Out
           </button>
@@ -2928,30 +2986,30 @@ const Radar = () => {
           MODAL: SELFIE LIVENESS VERIFICATION (TRACK 1)
          ========================================================================= */}
       {showSelfieModal && (
-        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
-          <div className="max-w-sm w-full bg-[#161320] border border-white/[0.15] rounded-3xl p-6 text-center text-white shadow-2xl flex flex-col items-center">
-            <h3 className="font-serif text-lg font-bold mb-1">Shield Selfie Verification</h3>
-            <p className="text-xs text-stone-300 mb-4">
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-md flex items-center justify-center p-4">
+          <div className="max-w-sm w-full bg-white/98 backdrop-blur-2xl border border-stone-200 rounded-[2rem] p-6 text-center text-stone-900 shadow-2xl flex flex-col items-center">
+            <h3 className="font-serif text-lg font-bold text-stone-900 mb-1">Shield Selfie Verification</h3>
+            <p className="text-xs text-stone-600 mb-4 leading-relaxed">
               Center your face in the oval frame and blink to confirm real liveness.
             </p>
 
-            <div className="w-48 h-56 rounded-full border-4 border-dashed border-rose-400 flex items-center justify-center relative overflow-hidden bg-black/60 mb-4">
+            <div className="w-48 h-56 rounded-full border-4 border-dashed border-[#711A31] flex items-center justify-center relative overflow-hidden bg-stone-100 mb-4">
               {selfieStep === 0 && (
                 <div className="text-center p-4">
                   <span className="text-4xl block mb-2">📸</span>
-                  <span className="text-[11px] text-stone-400">Position face inside oval</span>
+                  <span className="text-[11px] text-stone-500 font-medium">Position face inside oval</span>
                 </div>
               )}
               {selfieStep === 1 && (
                 <div className="text-center animate-pulse">
                   <span className="text-4xl block mb-2">👁️</span>
-                  <span className="text-xs text-rose-300 font-bold">Checking liveness...</span>
+                  <span className="text-xs text-[#711A31] font-bold">Checking liveness...</span>
                 </div>
               )}
               {selfieStep === 2 && (
                 <div className="text-center">
                   <span className="text-5xl block mb-2">🛡️</span>
-                  <span className="text-xs text-emerald-400 font-bold">Face Match Verified!</span>
+                  <span className="text-xs text-emerald-700 font-bold">Face Match Verified!</span>
                 </div>
               )}
             </div>
@@ -2959,13 +3017,13 @@ const Radar = () => {
             <div className="w-full flex space-x-2">
               <button
                 onClick={() => setShowSelfieModal(false)}
-                className="w-1/3 py-2.5 rounded-full border border-white/20 text-xs text-stone-300"
+                className="w-1/3 py-2.5 rounded-full border border-stone-200 text-xs text-stone-600 hover:bg-stone-100 font-bold transition"
               >
                 Cancel
               </button>
               <button
                 onClick={handleCompleteSelfie}
-                className="flex-1 bg-gradient-to-r from-[#711a31] to-rose-600 text-white font-black text-xs py-2.5 rounded-full shadow-lg"
+                className="flex-1 bg-[#711A31] hover:bg-[#581426] text-white font-black text-xs py-2.5 rounded-full shadow-md transition active:scale-95"
               >
                 {selfieStep === 0 ? "Start Scan" : "Done"}
               </button>
@@ -2978,10 +3036,10 @@ const Radar = () => {
           MODAL: WORKPLACE / UNIVERSITY DOMAIN VERIFY (TRACK 1)
          ========================================================================= */}
       {showWorkVerifyModal && (
-        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
-          <div className="max-w-sm w-full bg-[#161320] border border-white/[0.15] rounded-3xl p-6 text-white shadow-2xl">
-            <h3 className="font-serif text-lg font-bold mb-1">Work / College Verification</h3>
-            <p className="text-xs text-stone-400 mb-4">
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-md flex items-center justify-center p-4">
+          <div className="max-w-sm w-full bg-white/98 backdrop-blur-2xl border border-stone-200 rounded-[2rem] p-6 text-stone-900 shadow-2xl">
+            <h3 className="font-serif text-lg font-bold text-stone-900 mb-1">Work / College Verification</h3>
+            <p className="text-xs text-stone-600 mb-4 leading-relaxed">
               Enter your corporate email (e.g. @google.com, @tcs.com) or college email (.ac.in). We only verify the domain, never salary or personal info.
             </p>
 
@@ -2992,19 +3050,19 @@ const Radar = () => {
                 value={workEmailInput}
                 onChange={(e) => setWorkEmailInput(e.target.value)}
                 placeholder="name@company.com"
-                className="w-full bg-white/[0.05] border border-white/[0.15] rounded-xl px-4 py-2.5 text-xs text-white focus:outline-none focus:border-sky-400"
+                className="w-full bg-stone-50 border border-stone-200 rounded-xl px-4 py-2.5 text-xs text-stone-900 focus:outline-none focus:border-sky-500"
               />
               <div className="flex space-x-2 pt-2">
                 <button
                   type="button"
                   onClick={() => setShowWorkVerifyModal(false)}
-                  className="w-1/3 py-2.5 rounded-full border border-white/20 text-xs text-stone-300"
+                  className="w-1/3 py-2.5 rounded-full border border-stone-200 text-xs text-stone-600 hover:bg-stone-100 font-bold transition"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="flex-1 bg-sky-600 hover:bg-sky-700 text-white font-bold text-xs py-2.5 rounded-full shadow-lg"
+                  className="flex-1 bg-sky-700 hover:bg-sky-800 text-white font-bold text-xs py-2.5 rounded-full shadow-md transition active:scale-95"
                 >
                   Verify Domain
                 </button>
@@ -3018,12 +3076,12 @@ const Radar = () => {
           MODAL: PLAN DATE AT PARTNER CAFE (TRACK 5)
          ========================================================================= */}
       {showDatePlanModal && (
-        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
-          <div className="max-w-sm w-full bg-[#161320] border border-white/[0.15] rounded-3xl p-6 text-white shadow-2xl">
-            <h3 className="font-serif text-lg font-bold mb-1">
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-md flex items-center justify-center p-4">
+          <div className="max-w-sm w-full bg-white/98 backdrop-blur-2xl border border-stone-200 rounded-[2rem] p-6 text-stone-900 shadow-2xl">
+            <h3 className="font-serif text-lg font-bold text-stone-900 mb-1">
               Plan Coffee Date with {showDatePlanModal.name}
             </h3>
-            <p className="text-xs text-stone-400 mb-3">
+            <p className="text-xs text-stone-600 mb-3 leading-relaxed">
               Choose a curated, safe partner cafe halfway between both of you.
             </p>
 
@@ -3035,23 +3093,23 @@ const Radar = () => {
                     toast.success(`Date planned at ${cafe.name}! Invitation sent to ${showDatePlanModal.name} ☕`);
                     setShowDatePlanModal(null);
                   }}
-                  className="p-3 bg-white/[0.05] hover:bg-white/[0.1] rounded-2xl border border-white/[0.1] cursor-pointer transition flex items-center justify-between"
+                  className="p-3 bg-stone-50 hover:bg-stone-100 rounded-2xl border border-stone-200 cursor-pointer transition flex items-center justify-between"
                 >
                   <div>
-                    <h4 className="text-xs font-bold text-white">{cafe.name}</h4>
-                    <p className="text-[10px] text-stone-400">{cafe.city}</p>
-                    <span className="text-[10px] text-rose-300 font-medium">
+                    <h4 className="text-xs font-bold text-stone-900">{cafe.name}</h4>
+                    <p className="text-[10px] text-stone-500">{cafe.city}</p>
+                    <span className="text-[10px] text-[#711A31] font-semibold">
                       {cafe.discountOffer || cafe.discount_offer}
                     </span>
                   </div>
-                  <span className="text-xs font-bold text-rose-400">Select →</span>
+                  <span className="text-xs font-bold text-[#711A31]">Select →</span>
                 </div>
               ))}
             </div>
 
             <button
               onClick={() => setShowDatePlanModal(null)}
-              className="w-full py-2.5 rounded-full border border-white/20 text-xs text-stone-300"
+              className="w-full py-2.5 rounded-full border border-stone-200 text-xs text-stone-600 hover:bg-stone-100 font-bold transition"
             >
               Cancel
             </button>
@@ -3063,10 +3121,10 @@ const Radar = () => {
           MODAL: POLITE CLOSURE / UNMATCH (TRACK 2)
          ========================================================================= */}
       {showClosureModal && (
-        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
-          <div className="max-w-sm w-full bg-[#161320] border border-white/[0.15] rounded-3xl p-6 text-white shadow-2xl">
-            <h3 className="font-serif text-lg font-bold mb-1">Polite Closure</h3>
-            <p className="text-xs text-stone-400 mb-3">
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-md flex items-center justify-center p-4">
+          <div className="max-w-sm w-full bg-white/98 backdrop-blur-2xl border border-stone-200 rounded-[2rem] p-6 text-stone-900 shadow-2xl">
+            <h3 className="font-serif text-lg font-bold text-stone-900 mb-1">Polite Closure</h3>
+            <p className="text-xs text-stone-600 mb-3 leading-relaxed">
               End this match respectfully to unlock your slot without ghosting.
             </p>
 
@@ -3084,7 +3142,7 @@ const Radar = () => {
                     toast.success("Match closed politely. Slot is now open for new daters! 🔓");
                     setShowClosureModal(null);
                   }}
-                  className="w-full text-left p-3 rounded-xl bg-white/[0.05] hover:bg-white/[0.1] border border-white/[0.08] text-xs text-stone-200 transition"
+                  className="w-full text-left p-3.5 rounded-xl bg-stone-50 hover:bg-stone-100 border border-stone-200 text-xs text-stone-800 font-medium transition"
                 >
                   {reason}
                 </button>
@@ -3093,7 +3151,7 @@ const Radar = () => {
 
             <button
               onClick={() => setShowClosureModal(null)}
-              className="w-full py-2 rounded-full border border-white/20 text-xs text-stone-400"
+              className="w-full py-2.5 rounded-full border border-stone-200 text-xs text-stone-600 hover:bg-stone-100 font-bold transition"
             >
               Keep Match
             </button>
@@ -3105,24 +3163,24 @@ const Radar = () => {
           MODAL: CAFE PARTNER ONBOARDING
          ========================================================================= */}
       {showPartnerJoinModal && (
-        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
-          <div className="max-w-md w-full bg-[#161320] border border-white/[0.15] rounded-3xl p-6 text-white shadow-2xl max-h-[90vh] overflow-y-auto">
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-md flex items-center justify-center p-4">
+          <div className="max-w-md w-full bg-white/98 backdrop-blur-2xl border border-stone-200 rounded-[2rem] p-6 text-stone-900 shadow-2xl max-h-[90vh] overflow-y-auto">
             <div className="flex justify-between items-center mb-2">
-              <h3 className="font-serif text-lg font-bold">Partner Your Cafe</h3>
+              <h3 className="font-serif text-lg font-bold text-stone-900">Partner Your Cafe</h3>
               <button
                 onClick={() => setShowPartnerJoinModal(false)}
-                className="w-7 h-7 rounded-full bg-white/10 text-stone-400 flex items-center justify-center font-bold"
+                className="w-7 h-7 rounded-full bg-stone-100 text-stone-500 hover:bg-stone-200 flex items-center justify-center font-bold"
               >
                 ✕
               </button>
             </div>
-            <p className="text-xs text-stone-400 mb-4">
+            <p className="text-xs text-stone-600 mb-4 leading-relaxed">
               Get couples on dates sent to your cafe. You keep 90% of customer spend and share 10% platform commission on settled date bills.
             </p>
 
-            <form onSubmit={handleCafeSignup} className="space-y-3">
+            <form onSubmit={handleCafeSignup} className="space-y-3.5">
               <div>
-                <label className="block text-[11px] font-bold uppercase text-stone-300 mb-1">
+                <label className="block text-[11px] font-bold uppercase text-stone-700 mb-1">
                   Cafe Name
                 </label>
                 <input
@@ -3131,12 +3189,12 @@ const Radar = () => {
                   value={cafeForm.name}
                   onChange={(e) => setCafeForm({ ...cafeForm, name: e.target.value })}
                   placeholder="e.g. Roastery Coffee House"
-                  className="w-full bg-white/[0.05] border border-white/[0.15] rounded-xl px-3.5 py-2 text-xs text-white"
+                  className="w-full bg-stone-50 border border-stone-200 rounded-xl px-3.5 py-2.5 text-xs text-stone-900 focus:outline-none focus:border-[#711A31]"
                 />
               </div>
 
               <div>
-                <label className="block text-[11px] font-bold uppercase text-stone-300 mb-1">
+                <label className="block text-[11px] font-bold uppercase text-stone-700 mb-1">
                   City / Location
                 </label>
                 <input
@@ -3145,12 +3203,12 @@ const Radar = () => {
                   value={cafeForm.city}
                   onChange={(e) => setCafeForm({ ...cafeForm, city: e.target.value })}
                   placeholder="e.g. Jubilee Hills, Hyderabad"
-                  className="w-full bg-white/[0.05] border border-white/[0.15] rounded-xl px-3.5 py-2 text-xs text-white"
+                  className="w-full bg-stone-50 border border-stone-200 rounded-xl px-3.5 py-2.5 text-xs text-stone-900 focus:outline-none focus:border-[#711A31]"
                 />
               </div>
 
               <div>
-                <label className="block text-[11px] font-bold uppercase text-stone-300 mb-1">
+                <label className="block text-[11px] font-bold uppercase text-stone-700 mb-1">
                   Contact Phone / WhatsApp
                 </label>
                 <input
@@ -3159,12 +3217,12 @@ const Radar = () => {
                   value={cafeForm.contactPhone}
                   onChange={(e) => setCafeForm({ ...cafeForm, contactPhone: e.target.value })}
                   placeholder="+91 98765 43210"
-                  className="w-full bg-white/[0.05] border border-white/[0.15] rounded-xl px-3.5 py-2 text-xs text-white"
+                  className="w-full bg-stone-50 border border-stone-200 rounded-xl px-3.5 py-2.5 text-xs text-stone-900 focus:outline-none focus:border-[#711A31]"
                 />
               </div>
 
               <div>
-                <label className="block text-[11px] font-bold uppercase text-stone-300 mb-1">
+                <label className="block text-[11px] font-bold uppercase text-stone-700 mb-1">
                   Couple Perk / Discount Offer
                 </label>
                 <input
@@ -3172,13 +3230,13 @@ const Radar = () => {
                   value={cafeForm.discountOffer}
                   onChange={(e) => setCafeForm({ ...cafeForm, discountOffer: e.target.value })}
                   placeholder="10% off bill or free dessert"
-                  className="w-full bg-white/[0.05] border border-white/[0.15] rounded-xl px-3.5 py-2 text-xs text-white"
+                  className="w-full bg-stone-50 border border-stone-200 rounded-xl px-3.5 py-2.5 text-xs text-stone-900 focus:outline-none focus:border-[#711A31]"
                 />
               </div>
 
               <button
                 type="submit"
-                className="w-full bg-gradient-to-r from-[#711a31] to-rose-600 text-white font-bold text-xs py-3 rounded-xl shadow-lg mt-3"
+                className="w-full bg-[#711A31] hover:bg-[#581426] text-white font-bold text-xs py-3.5 rounded-xl shadow-md transition active:scale-95 mt-3"
               >
                 Submit Partnership & Get Table QR Standee
               </button>
@@ -3191,26 +3249,26 @@ const Radar = () => {
           MODAL: INTERACTIVE HINGE LIKE & COMMENT DRAWER WITH AI WINGMAN
          ========================================================================= */}
       {likeModalItem && (
-        <div className="fixed inset-0 z-50 bg-black/75 backdrop-blur-md flex items-end sm:items-center justify-center p-0 sm:p-4">
-          <div className="w-full max-w-md bg-[#161320] rounded-t-3xl sm:rounded-3xl shadow-2xl border border-white/[0.15] p-6 flex flex-col space-y-4">
-            <div className="flex justify-between items-center pb-2 border-b border-white/[0.08]">
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-md flex items-end sm:items-center justify-center p-0 sm:p-4">
+          <div className="w-full max-w-md bg-white/98 backdrop-blur-2xl rounded-t-[2rem] sm:rounded-[2rem] shadow-2xl border border-stone-200 p-6 flex flex-col space-y-4 text-stone-900">
+            <div className="flex justify-between items-center pb-3 border-b border-stone-200">
               <div>
-                <span className="text-[10px] font-black uppercase text-rose-400 tracking-wider">
+                <span className="text-[10px] font-black uppercase text-[#711A31] tracking-wider">
                   Sending Like to
                 </span>
-                <h3 className="font-serif text-lg font-bold text-white">
+                <h3 className="font-serif text-lg font-bold text-stone-900">
                   {likeModalItem.targetUser.name}
                 </h3>
               </div>
               <button
                 onClick={() => setLikeModalItem(null)}
-                className="w-8 h-8 rounded-full bg-white/10 text-stone-300 flex items-center justify-center font-bold"
+                className="w-8 h-8 rounded-full bg-stone-100 text-stone-500 hover:bg-stone-200 flex items-center justify-center font-bold"
               >
                 ✕
               </button>
             </div>
 
-            <div className="bg-white/[0.04] rounded-2xl p-3.5 border border-white/[0.08]">
+            <div className="bg-stone-50 rounded-2xl p-4 border border-stone-200/80">
               {likeModalItem.itemPhoto && (
                 <img
                   src={likeModalItem.itemPhoto}
@@ -3218,24 +3276,24 @@ const Radar = () => {
                   className="w-full h-32 object-cover rounded-xl mb-2"
                 />
               )}
-              <span className="text-[10px] font-black uppercase text-rose-400 tracking-wider">
+              <span className="text-[10px] font-black uppercase text-[#711A31] tracking-wider">
                 {likeModalItem.itemType}
               </span>
-              <p className="font-serif text-sm font-medium text-stone-200 mt-0.5">
+              <p className="font-serif text-sm font-medium text-stone-900 mt-0.5">
                 "{likeModalItem.itemContent}"
               </p>
             </div>
 
             {/* Comment Input with AI Wingman Button */}
             <div>
-              <div className="flex justify-between items-center mb-1">
-                <label className="block text-xs font-bold text-stone-300">
+              <div className="flex justify-between items-center mb-1.5">
+                <label className="block text-xs font-bold text-stone-700">
                   Add an optional comment
                 </label>
                 <button
                   type="button"
                   onClick={handleAiWingmanSuggest}
-                  className="text-[11px] font-bold text-amber-300 bg-amber-950/60 px-2.5 py-0.5 rounded-full border border-amber-500/30 flex items-center space-x-1 hover:bg-amber-950 transition"
+                  className="text-[11px] font-bold text-amber-900 bg-amber-50 px-2.5 py-0.5 rounded-full border border-amber-200 shadow-sm flex items-center space-x-1 hover:bg-amber-100 transition"
                 >
                   <span>💡 AI Wingman</span>
                 </button>
@@ -3245,20 +3303,20 @@ const Radar = () => {
                 value={likeComment}
                 onChange={(e) => setLikeComment(e.target.value)}
                 placeholder={`Ask ${likeModalItem.targetUser.name} a fun question...`}
-                className="w-full bg-white/[0.05] border border-white/[0.15] rounded-xl p-3 text-xs text-white focus:outline-none focus:border-rose-400 resize-none placeholder-stone-500"
+                className="w-full bg-stone-50 border border-stone-200 rounded-xl p-3 text-xs text-stone-900 focus:outline-none focus:border-[#711A31] resize-none placeholder-stone-400"
               ></textarea>
             </div>
 
             <div className="flex items-center space-x-3 pt-1">
               <button
                 onClick={() => setLikeModalItem(null)}
-                className="w-1/3 py-3 rounded-full border border-white/20 font-bold text-xs text-stone-400 hover:bg-white/[0.05]"
+                className="w-1/3 py-3 rounded-full border border-stone-200 font-bold text-xs text-stone-600 hover:bg-stone-100"
               >
                 Cancel
               </button>
               <button
                 onClick={handleSendLikeWithComment}
-                className="flex-1 bg-gradient-to-r from-[#711a31] via-rose-600 to-amber-600 hover:opacity-90 text-white font-extrabold text-xs py-3.5 rounded-full shadow-lg transition flex items-center justify-center space-x-1.5"
+                className="flex-1 bg-[#711A31] hover:bg-[#581426] text-white font-extrabold text-xs py-3.5 rounded-full shadow-md transition active:scale-95 flex items-center justify-center space-x-1.5"
               >
                 <span>Send Like & Lock Slot</span>
               </button>
@@ -3748,23 +3806,23 @@ const Radar = () => {
           MODAL: CREATE NEW POST (Instagram Style)
          ========================================================================= */}
       {newPostModalOpen && (
-        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-xl flex items-center justify-center p-4">
-          <div className="bg-[#121118] border border-white/[0.15] rounded-3xl max-w-md w-full p-6 shadow-2xl relative">
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-md flex items-center justify-center p-4">
+          <div className="bg-white/98 backdrop-blur-2xl border border-stone-200 rounded-[2rem] max-w-md w-full p-6 shadow-2xl relative text-stone-900">
             <button
               onClick={() => setNewPostModalOpen(false)}
-              className="absolute top-4 right-4 text-stone-400 hover:text-white text-xl font-bold"
+              className="absolute top-5 right-5 text-stone-400 hover:text-stone-700 text-xl font-bold w-8 h-8 rounded-full flex items-center justify-center"
             >
               ✕
             </button>
 
             <div className="flex items-center space-x-2.5 mb-5">
               <span className="text-2xl">📸</span>
-              <h3 className="text-xl font-bold font-serif text-white">Create New Post</h3>
+              <h3 className="text-xl font-bold font-serif text-stone-900">Create New Post</h3>
             </div>
 
             <form onSubmit={handleCreatePost} className="space-y-4">
               <div>
-                <label className="text-xs font-bold text-stone-300 block mb-1.5">
+                <label className="text-xs font-bold text-stone-700 block mb-1.5">
                   Photo URL (or Unsplash link)
                 </label>
                 <input
@@ -3772,18 +3830,18 @@ const Radar = () => {
                   placeholder="https://images.unsplash.com/..."
                   value={newPostImg}
                   onChange={(e) => setNewPostImg(e.target.value)}
-                  className="w-full bg-white/[0.05] border border-white/[0.1] rounded-2xl px-4 py-3 text-xs text-white placeholder-stone-500 focus:outline-none focus:border-rose-400"
+                  className="w-full bg-stone-50 border border-stone-200 rounded-2xl px-4 py-3 text-xs text-stone-900 placeholder-stone-400 focus:outline-none focus:border-[#711A31]"
                 />
               </div>
 
               {newPostImg && (
-                <div className="w-full h-44 rounded-2xl overflow-hidden bg-stone-900 border border-white/10">
+                <div className="w-full h-44 rounded-2xl overflow-hidden bg-stone-100 border border-stone-200">
                   <img src={newPostImg} alt="Preview" className="w-full h-full object-cover" />
                 </div>
               )}
 
               <div>
-                <label className="text-xs font-bold text-stone-300 block mb-1.5">
+                <label className="text-xs font-bold text-stone-700 block mb-1.5">
                   Caption & Tags
                 </label>
                 <textarea
@@ -3791,13 +3849,13 @@ const Radar = () => {
                   placeholder="Write a caption... #weekendvibes #mumbai #dating"
                   value={newPostCaption}
                   onChange={(e) => setNewPostCaption(e.target.value)}
-                  className="w-full bg-white/[0.05] border border-white/[0.1] rounded-2xl px-4 py-3 text-xs text-white placeholder-stone-500 focus:outline-none focus:border-rose-400 resize-none"
+                  className="w-full bg-stone-50 border border-stone-200 rounded-2xl px-4 py-3 text-xs text-stone-900 placeholder-stone-400 focus:outline-none focus:border-[#711A31] resize-none"
                 />
               </div>
 
               <button
                 type="submit"
-                className="w-full bg-gradient-to-r from-[#711a31] via-rose-600 to-amber-600 hover:opacity-90 text-white font-bold py-3.5 rounded-2xl shadow-lg transition active:scale-95 text-xs flex items-center justify-center space-x-2"
+                className="w-full bg-[#711A31] hover:bg-[#581426] text-white font-bold py-3.5 rounded-2xl shadow-md transition active:scale-95 text-xs flex items-center justify-center space-x-2"
               >
                 <span>Share to Date-NearMe Feed</span>
                 <span>🚀</span>
@@ -3808,109 +3866,18 @@ const Radar = () => {
       )}
 
       {/* =========================================================================
-          FLOATING MOBILE NAVIGATION BAR (100% RESPONSIVE - lg:hidden)
+          HINGE FLOATING CAPSULE NAVIGATION BAR (Matches Screenshots 1, 2, 3)
          ========================================================================= */}
-      <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-black/85 backdrop-blur-2xl border-t border-white/[0.08] px-2 py-2 flex justify-around items-center shadow-2xl">
-        {/* Tab 1: Feed (Instagram Social) */}
-        <button
-          onClick={() => {
-            setActiveTab("feed");
-            window.scrollTo({ top: 0, behavior: "smooth" });
-          }}
-          className={`flex flex-col items-center transition ${
-            activeTab === "feed" ? "text-rose-400 scale-105" : "text-stone-500 hover:text-stone-300"
-          }`}
-        >
-          <span className="text-xl leading-none">📱</span>
-          <span className="text-[9px] font-bold mt-1">Feed</span>
-        </button>
-
-        {/* Tab 2: Reels (YouTube / IG) */}
-        <button
-          onClick={() => {
-            setActiveTab("reels");
-            window.scrollTo({ top: 0, behavior: "smooth" });
-          }}
-          className={`flex flex-col items-center transition ${
-            activeTab === "reels" ? "text-rose-400 scale-105" : "text-stone-500 hover:text-stone-300"
-          }`}
-        >
-          <span className="text-xl leading-none">🎬</span>
-          <span className="text-[9px] font-bold mt-1">Reels</span>
-        </button>
-
-        {/* Tab 3: Discover (Hinge Dating) */}
-        <button
-          onClick={() => {
-            setActiveTab("discover");
-            window.scrollTo({ top: 0, behavior: "smooth" });
-          }}
-          className={`flex flex-col items-center transition ${
-            activeTab === "discover" ? "text-rose-400 scale-105" : "text-stone-500 hover:text-stone-300"
-          }`}
-        >
-          <span className="text-2xl font-serif font-black leading-none">H</span>
-          <span className="text-[9px] font-bold mt-1">Dating</span>
-        </button>
-
-        {/* Tab 4: Standouts */}
-        <button
-          onClick={() => setActiveTab("standouts")}
-          className={`flex flex-col items-center transition ${
-            activeTab === "standouts" ? "text-rose-400 scale-105" : "text-stone-500 hover:text-stone-300"
-          }`}
-        >
-          <span className="text-xl leading-none">⭐</span>
-          <span className="text-[9px] font-bold mt-1">Standouts</span>
-        </button>
-
-        {/* Tab 5: Matches */}
-        <button
-          onClick={() => setActiveTab("matches")}
-          className={`flex flex-col items-center transition relative ${
-            activeTab === "matches" ? "text-rose-400 scale-105" : "text-stone-500 hover:text-stone-300"
-          }`}
-        >
-          <span className="text-xl leading-none">💬</span>
-          {matchesList.some((m) => m.unread) && (
-            <span className="absolute top-0 right-2 w-2 h-2 bg-rose-500 rounded-full animate-ping"></span>
-          )}
-          <span className="text-[9px] font-bold mt-1">Chats</span>
-        </button>
-
-        {/* Tab 6: Cafes */}
-        <button
-          onClick={() => setActiveTab("cafes")}
-          className={`flex flex-col items-center transition ${
-            activeTab === "cafes" ? "text-rose-400 scale-105" : "text-stone-500 hover:text-stone-300"
-          }`}
-        >
-          <span className="text-xl leading-none">☕</span>
-          <span className="text-[9px] font-bold mt-1">Cafes</span>
-        </button>
-
-        {/* Tab 7: Affiliate */}
-        <button
-          onClick={() => setActiveTab("affiliate")}
-          className={`flex flex-col items-center transition ${
-            activeTab === "affiliate" ? "text-amber-400 scale-105" : "text-stone-500 hover:text-stone-300"
-          }`}
-        >
-          <span className="text-xl leading-none">🪙</span>
-          <span className="text-[9px] font-bold mt-1">Affiliate</span>
-        </button>
-
-        {/* Tab 8: Profile */}
-        <button
-          onClick={() => setActiveTab("profile")}
-          className={`flex flex-col items-center transition ${
-            activeTab === "profile" ? "text-rose-400 scale-105" : "text-stone-500 hover:text-stone-300"
-          }`}
-        >
-          <span className="text-xl leading-none">👤</span>
-          <span className="text-[9px] font-bold mt-1">Profile</span>
-        </button>
-      </nav>
+      <HingeNavBar
+        activeTab={activeTab}
+        onTabChange={(tab) => {
+          setActiveTab(tab);
+          window.scrollTo({ top: 0, behavior: "smooth" });
+        }}
+        matchesCount={matchesList.length}
+        unreadCount={matchesList.filter((m) => m.unread).length}
+        userAvatar={profileForm.avatar || user?.avatar}
+      />
     </div>
   );
 };

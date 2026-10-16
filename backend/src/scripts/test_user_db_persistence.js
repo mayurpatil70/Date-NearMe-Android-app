@@ -23,7 +23,7 @@ async function runTestSuite() {
 
   const testEmail = `test_hinge_${Date.now()}@example.com`;
   const testPassword = "Password@1234!";
-  const testPhone = "+91 98765 43210";
+  const testPhone = `+91 9${Math.floor(100000000 + Math.random() * 900000000)}`;
   const testDisplayName = "Aarav Sharma";
   const testGender = "Male";
 
@@ -89,7 +89,7 @@ async function runTestSuite() {
 
     // TEST 6: Profile Update (e.g. changing mobile number & shield verification)
     console.log("\n--- TEST 6: Profile Update (Mobile Number & Verification in DB) ---");
-    const updatedPhone = "+91 99887 76655";
+    const updatedPhone = `+91 8${Math.floor(100000000 + Math.random() * 900000000)}`;
     const updatedUser = await User.updateProfile(createdUser.id, {
       phoneNumber: updatedPhone,
       isShieldVerified: true,

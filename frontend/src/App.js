@@ -27,8 +27,9 @@ const ProtectedRoute = ({ children }) => {
 
   if (loading) {
     return (
-      <div className="h-screen w-screen bg-nearme-dark flex items-center justify-center text-white">
-        Loading...
+      <div className="h-screen w-screen bg-[#FAF8F5] flex flex-col items-center justify-center text-stone-900 font-sans">
+        <div className="w-10 h-10 border-3 border-stone-200 border-t-[#711A31] rounded-full animate-spin mb-3"></div>
+        <span className="text-xs font-serif font-bold text-stone-500 tracking-wider">Loading Date-NearMe...</span>
       </div>
     );
   }
@@ -45,7 +46,16 @@ function App() {
             <Toaster
               position="top-center"
               toastOptions={{
-                style: { background: "#333", color: "#fff" },
+                style: {
+                  background: "#ffffff",
+                  color: "#1c1917",
+                  border: "1px solid rgba(231, 229, 228, 0.8)",
+                  boxShadow: "0 10px 30px -5px rgba(0, 0, 0, 0.08)",
+                  fontWeight: "600",
+                  fontSize: "13px",
+                  borderRadius: "16px",
+                  padding: "10px 16px",
+                },
               }}
             />
             <Routes>

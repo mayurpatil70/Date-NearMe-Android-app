@@ -1,12 +1,15 @@
+"use client";
+
 import React, { useState, useEffect, useContext } from "react";
-import { useNavigate, useLocation, Link } from "react-router-dom";
+import { useRouter, useSearchParams } from "next/navigation";
+import Link from "next/link";
 import toast from "react-hot-toast";
 import api from "../../api/axiosConfig";
 import { AuthContext } from "../../Context/AuthContext";
 
 const Register = () => {
-  const navigate = useNavigate();
-  const location = useLocation();
+  const router = useRouter();
+  const searchParams = useSearchParams();
   const { login } = useContext(AuthContext);
 
   const [formData, setFormData] = useState({
@@ -25,15 +28,14 @@ const Register = () => {
 
   // Check URL query parameters for referral code (from Cafe Standee QR or Affiliate Link)
   useEffect(() => {
-    const params = new URLSearchParams(location.search);
-    const ref = params.get("ref");
+    const ref = searchParams?.get("ref");
     if (ref) {
       setFormData((prev) => ({ ...prev, referredBy: ref.trim().toUpperCase() }));
       toast.success(`Partner QR Applied: ${ref.trim().toUpperCase()} ✨`, {
         icon: "☕",
       });
     }
-  }, [location.search]);
+  }, [searchParams]);
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -62,7 +64,7 @@ const Register = () => {
         toast.success("Admin access granted! Welcome, Master Tester.", {
           duration: 4000,
         });
-        navigate("/radar");
+        router.push("/radar");
         return;
       } catch (err) {
         try {
@@ -80,7 +82,7 @@ const Register = () => {
             data.token,
           );
           toast.success("Admin logged in successfully!");
-          navigate("/radar");
+          router.push("/radar");
           return;
         } catch (loginErr) {
           toast.error(err.response?.data?.message || "Admin setup failed");
@@ -126,10 +128,10 @@ const Register = () => {
             const { data } = await api.post("/auth/register", formData);
             login(data, data.token);
             toast.success("Payment verified! Welcome to Date-NearMe Lifetime.");
-            navigate("/radar");
+            router.push("/radar");
           } catch (err) {
             toast.error(err.response?.data?.message || "Registration failed");
-            navigate("/login");
+            router.push("/login");
           }
         },
         prefill: {
@@ -187,36 +189,39 @@ const Register = () => {
   };
 
   return (
-    <div className="min-h-screen bg-radial from-[#1e1528] via-[#100e17] to-[#07060a] flex items-center justify-center p-4 font-sans text-white relative overflow-hidden">
-      {/* Ambient background glow */}
-      <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-96 h-96 bg-[#711a31]/20 rounded-full blur-3xl pointer-events-none"></div>
+    <div className="min-h-screen bg-[#FAF8F5] flex items-center justify-center p-4 font-sans text-stone-900 relative overflow-hidden selection:bg-[#711A31] selection:text-white">
+      {/* Ambient warm glossy glow */}
+      <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[550px] h-[550px] bg-gradient-to-tr from-rose-200/35 via-amber-100/30 to-pink-200/35 rounded-full blur-[130px] pointer-events-none"></div>
 
-      <div className="max-w-md w-full bg-white/[0.08] backdrop-blur-2xl rounded-3xl shadow-2xl p-7 border border-white/[0.15] z-10">
+      <div className="max-w-md w-full bg-white/95 backdrop-blur-2xl rounded-[2.5rem] shadow-[0_25px_60px_-15px_rgba(0,0,0,0.07),0_4px_16px_rgba(0,0,0,0.03)] p-7 sm:p-9 border border-stone-200/80 z-10 relative">
+        {/* Top gloss specular highlight */}
+        <div className="absolute inset-x-10 top-0 h-[1.5px] bg-gradient-to-r from-transparent via-stone-200 to-transparent pointer-events-none"></div>
+
         <div className="text-center mb-6 flex flex-col items-center">
-          <div className="w-16 h-16 rounded-2xl bg-white/10 backdrop-blur-md p-2 border border-white/20 flex items-center justify-center mb-2 shadow-lg hover:scale-105 transition-transform duration-300">
+          <div className="w-16 h-16 rounded-2xl bg-white shadow-md p-2 border border-stone-100 flex items-center justify-center mb-2 hover:scale-105 transition-transform duration-300">
             <img
               src="/logo.png"
               alt="Date-NearMe"
               className="w-full h-full object-contain"
             />
           </div>
-          <h2 className="text-2xl font-serif font-black tracking-tight text-white">
+          <h2 className="text-2xl font-serif font-black tracking-tight text-stone-900">
             Join Date-NearMe
           </h2>
           {isAdmin ? (
-            <p className="text-emerald-400 font-bold mt-1 text-xs bg-emerald-950/60 px-3 py-1 rounded-full border border-emerald-500/30">
+            <p className="text-emerald-700 font-bold mt-1 text-xs bg-emerald-50 px-3 py-1 rounded-full border border-emerald-200">
               ⚡ Admin Mode: Free Pass Activated
             </p>
           ) : (
-            <p className="text-stone-300 font-medium mt-1 text-xs">
-              Unlock <span className="text-rose-400 font-bold">Lifetime Access</span> for ₹199 (No recharges needed!)
+            <p className="text-stone-500 font-medium mt-1 text-xs">
+              Unlock <span className="text-[#711A31] font-bold">Lifetime Access</span> for ₹199 (No recharges needed!)
             </p>
           )}
 
           {formData.referredBy && (
-            <div className="mt-2 text-[11px] font-bold text-amber-300 bg-amber-950/50 px-3 py-1 rounded-full border border-amber-500/30 flex items-center space-x-1">
+            <div className="mt-2 text-[11px] font-bold text-amber-800 bg-amber-50 px-3 py-1 rounded-full border border-amber-200 flex items-center space-x-1">
               <span>☕ Cafe / Partner Code:</span>
-              <span className="font-mono text-white">{formData.referredBy}</span>
+              <span className="font-mono text-stone-900 font-bold">{formData.referredBy}</span>
             </div>
           )}
         </div>
@@ -224,7 +229,7 @@ const Register = () => {
         <form onSubmit={handlePaymentAndRegister} className="space-y-3.5">
           {/* Name */}
           <div>
-            <label className="block text-xs font-bold uppercase text-stone-300 mb-1">
+            <label className="block text-xs font-bold uppercase tracking-wider text-stone-600 mb-1">
               Your Name
             </label>
             <input
@@ -233,14 +238,14 @@ const Register = () => {
               required
               value={formData.displayName}
               onChange={handleChange}
-              className="w-full bg-white/[0.05] border border-white/[0.15] text-white rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:border-rose-400 transition placeholder-stone-500"
+              className="w-full bg-stone-50 border border-stone-200 text-stone-900 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:bg-white focus:border-[#711A31] focus:ring-2 focus:ring-[#711A31]/15 transition placeholder-stone-400"
               placeholder="e.g. Ananya Sen"
             />
           </div>
 
           {/* Email */}
           <div>
-            <label className="block text-xs font-bold uppercase text-stone-300 mb-1">
+            <label className="block text-xs font-bold uppercase tracking-wider text-stone-600 mb-1">
               Email Address
             </label>
             <input
@@ -249,7 +254,7 @@ const Register = () => {
               required
               value={formData.email}
               onChange={handleChange}
-              className="w-full bg-white/[0.05] border border-white/[0.15] text-white rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:border-rose-400 transition placeholder-stone-500"
+              className="w-full bg-stone-50 border border-stone-200 text-stone-900 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:bg-white focus:border-[#711A31] focus:ring-2 focus:ring-[#711A31]/15 transition placeholder-stone-400"
               placeholder="you@example.com"
             />
           </div>
@@ -257,10 +262,10 @@ const Register = () => {
           {/* Mobile Number with Placeholder */}
           <div>
             <div className="flex justify-between items-center mb-1">
-              <label className="block text-xs font-bold uppercase text-stone-300">
+              <label className="block text-xs font-bold uppercase tracking-wider text-stone-600">
                 Mobile Number
               </label>
-              <span className="text-[10px] text-emerald-400 font-medium">
+              <span className="text-[10px] text-emerald-600 font-bold bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-100">
                 Stored securely
               </span>
             </div>
@@ -269,14 +274,14 @@ const Register = () => {
               name="phoneNumber"
               value={formData.phoneNumber}
               onChange={handleChange}
-              className="w-full bg-white/[0.05] border border-white/[0.15] text-white rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:border-rose-400 transition placeholder-stone-500 font-mono"
+              className="w-full bg-stone-50 border border-stone-200 text-stone-900 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:bg-white focus:border-[#711A31] focus:ring-2 focus:ring-[#711A31]/15 transition placeholder-stone-400 font-mono"
               placeholder="+91 98765 43210"
             />
           </div>
 
           {/* Password */}
           <div>
-            <label className="block text-xs font-bold uppercase text-stone-300 mb-1">
+            <label className="block text-xs font-bold uppercase tracking-wider text-stone-600 mb-1">
               Password
             </label>
             <input
@@ -285,7 +290,7 @@ const Register = () => {
               required
               value={formData.password}
               onChange={handleChange}
-              className="w-full bg-white/[0.05] border border-white/[0.15] text-white rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:border-rose-400 transition placeholder-stone-500"
+              className="w-full bg-stone-50 border border-stone-200 text-stone-900 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:bg-white focus:border-[#711A31] focus:ring-2 focus:ring-[#711A31]/15 transition placeholder-stone-400"
               placeholder="••••••••"
             />
           </div>
@@ -293,14 +298,14 @@ const Register = () => {
           {/* Cultural & Lifestyle Dealbreakers (Diet, Intent, Gender) */}
           <div className="grid grid-cols-2 gap-2.5">
             <div>
-              <label className="block text-[11px] font-bold uppercase text-stone-300 mb-1">
+              <label className="block text-[11px] font-bold uppercase tracking-wider text-stone-600 mb-1">
                 Gender
               </label>
               <select
                 name="gender"
                 value={formData.gender}
                 onChange={handleChange}
-                className="w-full bg-[#1c1827] border border-white/[0.15] text-white rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-rose-400"
+                className="w-full bg-stone-50 border border-stone-200 text-stone-900 rounded-xl px-3 py-2 text-xs focus:outline-none focus:bg-white focus:border-[#711A31]"
               >
                 <option value="Male">Male</option>
                 <option value="Female">Female</option>
@@ -309,33 +314,33 @@ const Register = () => {
             </div>
 
             <div>
-              <label className="block text-[11px] font-bold uppercase text-stone-300 mb-1">
+              <label className="block text-[11px] font-bold uppercase tracking-wider text-stone-600 mb-1">
                 Dietary Habit
               </label>
               <select
                 name="diet"
                 value={formData.diet}
                 onChange={handleChange}
-                className="w-full bg-[#1c1827] border border-white/[0.15] text-white rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-rose-400"
+                className="w-full bg-stone-50 border border-stone-200 text-stone-900 rounded-xl px-3 py-2 text-xs focus:outline-none focus:bg-white focus:border-[#711A31]"
               >
-                <option value="Pure Veg">Pure Veg</option>
-                <option value="Jain">Strict Jain</option>
-                <option value="Eggetarian">Eggetarian</option>
-                <option value="Non-Veg">Non-Veg</option>
-                <option value="Vegan">Vegan</option>
+                <option value="Pure Veg">Pure Veg 🥗</option>
+                <option value="Jain">Strict Jain 🪷</option>
+                <option value="Eggetarian">Eggetarian 🥚</option>
+                <option value="Non-Veg">Non-Veg 🍗</option>
+                <option value="Vegan">Vegan 🌱</option>
               </select>
             </div>
           </div>
 
           <div>
-            <label className="block text-[11px] font-bold uppercase text-stone-300 mb-1">
+            <label className="block text-[11px] font-bold uppercase tracking-wider text-stone-600 mb-1">
               Relationship Goal (No Situationships)
             </label>
             <select
               name="relationshipIntent"
               value={formData.relationshipIntent}
               onChange={handleChange}
-              className="w-full bg-[#1c1827] border border-white/[0.15] text-white rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-rose-400"
+              className="w-full bg-stone-50 border border-stone-200 text-stone-900 rounded-xl px-3 py-2 text-xs focus:outline-none focus:bg-white focus:border-[#711A31]"
             >
               <option value="Dating for Marriage (1-2 Years)">
                 💍 Dating for Marriage (1-2 Years)
@@ -354,7 +359,7 @@ const Register = () => {
 
           {/* Referral / Partner QR Code input */}
           <div>
-            <label className="block text-[11px] font-bold uppercase text-stone-300 mb-1">
+            <label className="block text-[11px] font-bold uppercase tracking-wider text-stone-600 mb-1">
               Partner Cafe / Referral Code (Optional)
             </label>
             <input
@@ -362,7 +367,7 @@ const Register = () => {
               name="referredBy"
               value={formData.referredBy}
               onChange={handleChange}
-              className="w-full bg-white/[0.05] border border-white/[0.15] text-white rounded-xl px-3.5 py-2 text-xs font-mono uppercase focus:outline-none focus:border-rose-400 placeholder-stone-500"
+              className="w-full bg-stone-50 border border-stone-200 text-stone-900 rounded-xl px-3.5 py-2 text-xs font-mono uppercase focus:outline-none focus:bg-white focus:border-[#711A31] placeholder-stone-400"
               placeholder="e.g. CAFE_BLUETOKAI or FRIEND_CODE"
             />
           </div>
@@ -370,10 +375,10 @@ const Register = () => {
           <button
             type="submit"
             disabled={loading}
-            className={`w-full font-black rounded-xl px-4 py-3.5 transition-all transform hover:scale-[1.02] active:scale-95 disabled:opacity-70 mt-4 flex justify-center items-center shadow-xl text-sm ${
+            className={`w-full font-black rounded-2xl px-4 py-3.5 transition-all transform hover:scale-[1.01] active:scale-95 disabled:opacity-70 mt-4 flex justify-center items-center shadow-lg text-sm ${
               isAdmin
-                ? "bg-emerald-600 hover:bg-emerald-700 text-white"
-                : "bg-gradient-to-r from-[#711a31] via-rose-600 to-amber-600 hover:opacity-90 text-white"
+                ? "bg-emerald-600 hover:bg-emerald-700 text-white shadow-emerald-600/25"
+                : "bg-[#711A31] hover:bg-[#541223] text-white shadow-[#711A31]/25"
             }`}
           >
             {loading
@@ -384,11 +389,11 @@ const Register = () => {
           </button>
         </form>
 
-        <p className="text-center text-stone-400 mt-5 text-xs font-medium">
+        <p className="text-center text-stone-500 mt-5 text-xs font-medium">
           Already registered?{" "}
           <Link
-            to="/login"
-            className="text-rose-400 hover:underline font-bold transition-colors ml-1"
+            href="/login"
+            className="text-[#711A31] hover:underline font-bold transition-colors ml-1"
           >
             Log in
           </Link>

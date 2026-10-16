@@ -54,6 +54,19 @@ app.use((err, req, res, next) => {
     .json({ message: "Internal Server Error", error: err.message });
 });
 
+const http = require("http");
+const { Server } = require("socket.io");
+const chatSocket = require("./sockets/chat.socket");
+
+const server = http.createServer(app);
+const io = new Server(server, {
+  cors: {
+    origin: "*",
+    methods: ["GET", "POST", "PUT", "DELETE"],
+  },
+});
+chatSocket(io);
+
 // Health check route
 app.get("/", (req, res) => {
   res.json({ status: "ok", message: "Date-NearMe API is live and healthy!" });
@@ -67,9 +80,9 @@ const startServer = async () => {
     // Connect to Neon PostgreSQL
     await connectDB();
 
-    // Start Express Server
-    app.listen(PORT, () => {
-      console.log(`Server running on port ${PORT}`);
+    // Start HTTP & Socket.IO Server
+    server.listen(PORT, () => {
+      console.log(`Server & WebSockets running on port ${PORT}`);
     });
   } catch (error) {
     console.error("Failed to start server:", error);
@@ -81,4 +94,4 @@ if (require.main === module) {
   startServer();
 }
 
-module.exports = app;
+module.exports = { app, server, io };

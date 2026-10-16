@@ -1,15 +1,18 @@
+"use client";
+
 import React, { useState, useEffect, useContext } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 import { AuthContext } from "../../Context/AuthContext";
 import { SocketContext } from "../../Context/SocketContext";
 import api from "../../api/axiosConfig";
 
 const ChatRoom = () => {
-  const { targetUserId } = useParams();
+  const params = useParams();
+  const targetUserId = params?.id || params?.targetUserId;
   const { user, updateWallet } = useContext(AuthContext);
   const socket = useContext(SocketContext);
-  const navigate = useNavigate();
+  const router = useRouter();
 
   const [messages, setMessages] = useState([]);
   const [currentMessage, setCurrentMessage] = useState("");
@@ -59,7 +62,7 @@ const ChatRoom = () => {
 
     const handleChatError = (errorData) => {
       toast.error(errorData.message);
-      navigate("/radar");
+      router.push("/radar");
     };
 
     socket.on("receive_message", handleReceiveMessage);
@@ -163,7 +166,7 @@ const ChatRoom = () => {
       "Mutual closure complete! 1 Escrow Token refunded. Slot reopened.",
       { duration: 4000, icon: "🤝" },
     );
-    setTimeout(() => navigate("/radar"), 2000);
+    setTimeout(() => router.push("/radar"), 2000);
   };
 
   // REAL-WORLD VENUE DATE PASS GENERATION
@@ -214,20 +217,20 @@ const ChatRoom = () => {
   };
 
   return (
-    <div className="min-h-screen w-full bg-[#fbf9f5] flex flex-col items-center justify-between font-sans text-stone-900">
+    <div className="min-h-screen w-full bg-[#FAF8F5] flex flex-col items-center justify-between font-sans text-stone-900">
       {/* CHAT CONTAINER (Max width for responsive mobile and desktop) */}
-      <div className="w-full max-w-lg flex flex-col h-screen bg-white shadow-xl border-x border-stone-200 relative">
+      <div className="w-full max-w-lg flex flex-col h-screen bg-white/95 backdrop-blur-2xl shadow-[0_12px_45px_rgba(0,0,0,0.06)] border-x border-stone-200/80 relative">
         {/* HEADER BAR */}
-        <header className="px-4 py-3 bg-white/95 backdrop-blur-md border-b border-stone-200 flex items-center justify-between shrink-0 shadow-sm z-20">
+        <header className="px-4 py-3 bg-white/95 backdrop-blur-md border-b border-stone-200/80 flex items-center justify-between shrink-0 shadow-sm z-20">
           <div className="flex items-center space-x-2.5">
             <button
-              onClick={() => navigate("/radar")}
-              className="text-stone-600 hover:text-black font-extrabold text-sm px-2.5 py-1.5 rounded-xl hover:bg-stone-100 transition"
+              onClick={() => router.push("/radar")}
+              className="text-stone-600 hover:text-stone-900 font-extrabold text-sm px-2.5 py-1.5 rounded-xl hover:bg-stone-100 transition"
               title="Return to Discovery"
             >
               ←
             </button>
-            <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-rose-500 to-orange-400 text-white font-black text-xs flex items-center justify-center border border-white shadow-sm">
+            <div className="w-9 h-9 rounded-full bg-[#711A31] text-white font-serif font-black text-xs flex items-center justify-center border-2 border-white shadow-sm">
               DP
             </div>
             <div>
@@ -237,7 +240,7 @@ const ChatRoom = () => {
                 </span>
                 <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
               </div>
-              <span className="text-[10px] font-bold text-rose-600 flex items-center">
+              <span className="text-[10px] font-bold text-[#711A31] flex items-center">
                 🔒 Anti-Ghosting Escrow Protected
               </span>
             </div>
@@ -247,7 +250,7 @@ const ChatRoom = () => {
           <div className="flex items-center space-x-1.5">
             <button
               onClick={handleGenerateDatePass}
-              className="bg-stone-100 hover:bg-stone-200 text-stone-800 text-[11px] font-extrabold px-2.5 py-1.5 rounded-xl transition flex items-center space-x-1 border border-stone-200"
+              className="bg-stone-100 hover:bg-stone-200 text-stone-800 text-[11px] font-extrabold px-3 py-1.5 rounded-xl transition flex items-center space-x-1 border border-stone-200 shadow-sm"
               title="Generate Real-World Date Pass"
             >
               <span>📍</span>
@@ -255,7 +258,7 @@ const ChatRoom = () => {
             </button>
             <button
               onClick={handleMutualClose}
-              className="bg-rose-50 hover:bg-rose-100 text-rose-700 text-[11px] font-extrabold px-2.5 py-1.5 rounded-xl transition border border-rose-200"
+              className="bg-rose-50 hover:bg-rose-100 text-[#711A31] text-[11px] font-extrabold px-3 py-1.5 rounded-xl transition border border-rose-200 shadow-sm"
               title="Mutual Polite Close (Refunds Escrow)"
             >
               🤝 Close
@@ -264,20 +267,20 @@ const ChatRoom = () => {
         </header>
 
         {/* ANTI-GHOSTING ESCROW COUNTDOWN BANNER */}
-        <div className="bg-gradient-to-r from-stone-900 via-stone-800 to-stone-900 text-white px-4 py-2 flex items-center justify-between text-xs shrink-0 border-b border-stone-800">
+        <div className="bg-[#711A31] text-white px-4 py-2.5 flex items-center justify-between text-xs shrink-0 shadow-inner">
           <div className="flex items-center space-x-2">
-            <span className="text-amber-400 font-bold">⏱️ Inactivity Deadline:</span>
-            <span className="font-mono font-black text-amber-300">
+            <span className="text-rose-100 font-semibold">⏱️ Inactivity Deadline:</span>
+            <span className="font-mono font-black text-white text-sm tracking-wide">
               {formatTimer(timeLeft)}
             </span>
           </div>
-          <span className="text-[10px] bg-white/10 px-2 py-0.5 rounded-md text-stone-300">
+          <span className="text-[10px] font-bold bg-white/20 px-2.5 py-0.5 rounded-full text-white backdrop-blur-sm border border-white/25">
             1 Token Locked
           </span>
         </div>
 
         {/* MESSAGES FEED */}
-        <div className="flex-1 p-4 overflow-y-auto space-y-3 bg-[#faf8f5]">
+        <div className="flex-1 p-4 overflow-y-auto space-y-3 bg-[#FAF8F5]">
           {/* Welcome Intro */}
           <div className="text-center py-4 px-2">
             <div className="w-12 h-12 rounded-2xl bg-white shadow-sm border border-stone-200 flex items-center justify-center mx-auto mb-2 text-2xl">
@@ -315,16 +318,16 @@ const ChatRoom = () => {
                 }`}
               >
                 <div
-                  className={`max-w-[78%] px-4 py-2.5 rounded-2xl text-xs md:text-sm font-medium shadow-sm ${
+                  className={`max-w-[78%] px-4 py-2.5 rounded-2xl text-xs md:text-sm font-medium shadow-sm leading-relaxed ${
                     msg.isMine
-                      ? "bg-stone-900 text-white rounded-br-none"
-                      : "bg-white text-stone-900 border border-stone-200 rounded-bl-none"
+                      ? "bg-[#711A31] text-white rounded-br-none shadow-md"
+                      : "bg-white text-stone-900 border border-stone-200/80 rounded-bl-none shadow-sm"
                   }`}
                 >
                   <p>{msg.message}</p>
                   <span
                     className={`text-[9px] block text-right mt-1 ${
-                      msg.isMine ? "text-stone-400" : "text-stone-400"
+                      msg.isMine ? "text-rose-200" : "text-stone-400"
                     }`}
                   >
                     {new Date(msg.timestamp).toLocaleTimeString([], {
@@ -339,14 +342,14 @@ const ChatRoom = () => {
         </div>
 
         {/* AI WINGMAN TRIGGER BAR */}
-        <div className="px-3 py-1.5 bg-stone-50 border-t border-stone-200 flex items-center justify-between shrink-0">
-          <div className="flex items-center space-x-1.5 text-xs text-stone-500">
+        <div className="px-3.5 py-2 bg-stone-50 border-t border-stone-200/80 flex items-center justify-between shrink-0">
+          <div className="flex items-center space-x-1.5 text-xs text-stone-600 font-medium">
             <span>Conversational pause?</span>
           </div>
           <button
             onClick={triggerAiWingman}
             disabled={wingmanLoading}
-            className="text-xs font-black text-rose-600 hover:text-rose-700 bg-rose-50 hover:bg-rose-100 border border-rose-200 px-3 py-1 rounded-xl transition flex items-center space-x-1 active:scale-95"
+            className="text-xs font-black text-[#711A31] hover:text-[#581426] bg-rose-50 hover:bg-rose-100 border border-rose-200 px-3.5 py-1 rounded-xl transition flex items-center space-x-1 active:scale-95 shadow-sm"
           >
             <span>✨</span>
             <span>{wingmanLoading ? "Analyzing..." : "Ask AI Wingman"}</span>
@@ -356,18 +359,18 @@ const ChatRoom = () => {
         {/* INPUT BAR */}
         <form
           onSubmit={sendMessage}
-          className="p-3 bg-white border-t border-stone-200 flex items-center space-x-2 shrink-0"
+          className="p-3 bg-white border-t border-stone-200/80 flex items-center space-x-2 shrink-0"
         >
           <input
             type="text"
             value={currentMessage}
             onChange={(e) => setCurrentMessage(e.target.value)}
             placeholder="Type a thoughtful, anti-ghosting reply..."
-            className="flex-1 bg-stone-50 border border-stone-200 rounded-2xl px-4 py-3 text-xs md:text-sm text-stone-900 focus:outline-none focus:border-stone-900 transition"
+            className="flex-1 bg-stone-50 border border-stone-200 rounded-2xl px-4 py-3 text-xs md:text-sm text-stone-900 focus:outline-none focus:border-[#711A31] transition"
           />
           <button
             type="submit"
-            className="bg-stone-900 hover:bg-black text-white font-extrabold text-xs md:text-sm px-5 py-3 rounded-2xl transition active:scale-95 shadow-md shrink-0"
+            className="bg-[#711A31] hover:bg-[#581426] text-white font-extrabold text-xs md:text-sm px-5 py-3 rounded-2xl transition active:scale-95 shadow-md shrink-0"
           >
             Send
           </button>
@@ -376,28 +379,28 @@ const ChatRoom = () => {
 
       {/* DATE PASS (QR CODE) VERIFICATION MODAL */}
       {showDatePassModal && (
-        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl max-w-sm w-full p-6 text-center shadow-2xl border border-stone-200 relative animate-fadeIn">
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-md flex items-center justify-center p-4">
+          <div className="bg-white/98 backdrop-blur-2xl rounded-[2rem] max-w-sm w-full p-6 text-center shadow-2xl border border-stone-200 relative animate-fadeIn text-stone-900">
             <button
               onClick={() => setShowDatePassModal(false)}
-              className="absolute top-4 right-4 text-stone-400 hover:text-black font-bold text-lg"
+              className="absolute top-4 right-4 text-stone-400 hover:text-stone-700 font-bold text-lg w-8 h-8 rounded-full flex items-center justify-center"
             >
               ✕
             </button>
 
-            <div className="w-12 h-12 rounded-2xl bg-rose-50 text-rose-600 text-2xl flex items-center justify-center mx-auto mb-3">
+            <div className="w-12 h-12 rounded-2xl bg-rose-50 text-[#711A31] text-2xl flex items-center justify-center mx-auto mb-3 border border-rose-200">
               📍
             </div>
             <h2 className="text-xl font-serif font-black text-stone-900">
               Partner Venue Date Pass
             </h2>
-            <p className="text-xs text-stone-500 mt-1 mb-5">
+            <p className="text-xs text-stone-600 mt-1 mb-5 leading-relaxed">
               Show this QR pass at partner venues (Blue Tokai / Subko Coffee) for
               free artisanal coffee & verified real-world trust scores!
             </p>
 
             {/* QR Simulation Box */}
-            <div className="w-48 h-48 mx-auto bg-stone-100 border-2 border-dashed border-stone-300 rounded-2xl p-4 flex flex-col items-center justify-center relative mb-4">
+            <div className="w-48 h-48 mx-auto bg-stone-50 border-2 border-dashed border-stone-300 rounded-2xl p-4 flex flex-col items-center justify-center relative mb-4">
               <img
                 src={`https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=${encodeURIComponent(
                   qrToken,
@@ -407,18 +410,18 @@ const ChatRoom = () => {
               />
             </div>
 
-            <p className="text-[10px] font-mono text-stone-400 truncate mb-4">
+            <p className="text-[10px] font-mono text-stone-500 truncate mb-4">
               {qrToken}
             </p>
 
             {venueCheckedIn ? (
-              <div className="bg-emerald-50 border border-emerald-200 text-emerald-800 p-3 rounded-2xl text-xs font-bold flex items-center justify-center space-x-1.5">
+              <div className="bg-emerald-50 border border-emerald-200 text-emerald-800 p-3 rounded-2xl text-xs font-bold flex items-center justify-center space-x-1.5 shadow-sm">
                 <span>✓ Verified Check-in Complete (+10 Trust Score)</span>
               </div>
             ) : (
               <button
                 onClick={handleVerifyVenueCheckin}
-                className="w-full bg-stone-900 hover:bg-black text-white font-extrabold text-xs py-3.5 rounded-2xl transition shadow-lg active:scale-95"
+                className="w-full bg-[#711A31] hover:bg-[#581426] text-white font-extrabold text-xs py-3.5 rounded-2xl transition shadow-md active:scale-95"
               >
                 Simulate Partner Venue Scan
               </button>

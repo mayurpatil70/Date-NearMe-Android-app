@@ -1,42 +1,69 @@
+"use client";
+
 import React, { useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useRouter } from "next/navigation";
 
 const SplashScreen = () => {
-  const navigate = useNavigate();
+  const router = useRouter();
 
   useEffect(() => {
     // Automatically redirect to the login/register screen after 3.5 seconds
     const timer = setTimeout(() => {
-      navigate("/login");
+      if (router && typeof router.push === "function") {
+        router.push("/login");
+      } else if (typeof window !== "undefined") {
+        window.location.href = "/login";
+      }
     }, 3500);
 
     return () => clearTimeout(timer);
-  }, [navigate]);
+  }, [router]);
 
   return (
-    <div className="h-screen w-screen bg-gradient-to-b from-gray-950 via-black to-gray-950 flex flex-col justify-center items-center overflow-hidden relative selection:bg-rose-500 selection:text-white">
-      {/* Subtle Ambient Radial Glow */}
-      <div className="absolute w-96 h-96 bg-gradient-to-tr from-pink-500/20 via-rose-500/15 to-orange-500/20 rounded-full blur-3xl pointer-events-none animate-pulse"></div>
+    <div className="h-screen w-screen bg-[#FAF8F5] flex flex-col justify-center items-center overflow-hidden relative selection:bg-[#711A31] selection:text-white font-sans">
+      {/* Subtle Ambient Glossy Warm Glows */}
+      <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[500px] h-[500px] bg-gradient-to-tr from-rose-200/40 via-amber-100/30 to-pink-200/40 rounded-full blur-[120px] pointer-events-none animate-pulse"></div>
 
-      {/* Main Brand Logo Container */}
+      {/* Main Brand Logo Container - High Gloss Glass Card */}
       <div className="relative z-10 flex flex-col items-center px-6 text-center transform transition-all duration-700">
-        <div className="w-48 h-48 md:w-56 md:h-56 p-2 rounded-3xl bg-white/5 backdrop-blur-xl border border-white/10 shadow-2xl flex items-center justify-center mb-6 hover:scale-105 transition-transform duration-500">
+        <div className="w-44 h-44 md:w-52 md:h-52 p-4 rounded-[2.5rem] bg-white/90 backdrop-blur-2xl border border-white/80 shadow-[0_20px_50px_rgba(113,26,49,0.08),0_4px_12px_rgba(0,0,0,0.03)] flex items-center justify-center mb-6 hover:scale-105 transition-transform duration-500 relative">
+          {/* Top specular glossy reflection line */}
+          <div className="absolute inset-x-6 top-0 h-[1.5px] bg-gradient-to-r from-transparent via-white to-transparent rounded-full pointer-events-none"></div>
           <img
             src="/logo.png"
             alt="Date-NearMe Logo"
-            className="w-full h-full object-contain rounded-2xl drop-shadow-xl"
+            className="w-full h-full object-contain drop-shadow-md"
           />
         </div>
 
-        <p className="text-gray-400 text-sm md:text-base font-medium tracking-wide max-w-xs">
-          Real connections, authentic vibes, zero ghosting.
+        <h1 className="font-serif text-3xl font-black text-stone-900 tracking-tight mb-2">
+          Date-NearMe
+        </h1>
+
+        <p className="text-stone-500 text-sm md:text-base font-medium tracking-wide max-w-xs leading-relaxed">
+          The intentional dating experience designed to be deleted.
         </p>
+
+        <div className="mt-8 flex items-center space-x-3">
+          <button
+            onClick={() => router.push("/register")}
+            className="bg-[#711A31] hover:bg-[#541223] text-white font-bold text-xs py-3 px-6 rounded-full shadow-md transition active:scale-95"
+          >
+            Create Account
+          </button>
+          <button
+            onClick={() => router.push("/login")}
+            className="bg-white hover:bg-stone-50 border border-stone-300 text-stone-900 font-bold text-xs py-3 px-6 rounded-full shadow-sm transition active:scale-95"
+          >
+            Sign In
+          </button>
+        </div>
       </div>
 
       {/* Bottom Loading Indicator */}
       <div className="absolute bottom-12 flex flex-col items-center space-y-3 z-10">
-        <div className="w-7 h-7 border-3 border-white/20 border-t-rose-500 rounded-full animate-spin"></div>
-        <span className="text-xs font-semibold uppercase tracking-widest text-gray-400">
+        <div className="w-7 h-7 border-3 border-stone-200 border-t-[#711A31] rounded-full animate-spin"></div>
+        <span className="text-[11px] font-bold uppercase tracking-widest text-stone-400">
           Finding Your Vibe
         </span>
       </div>
