@@ -137,6 +137,12 @@ const Register = () => {
           contact: formData.phoneNumber,
         },
         theme: { color: "#711a31" },
+        modal: {
+          ondismiss: function () {
+            setLoading(false);
+            toast("Payment window closed", { icon: "ℹ️" });
+          },
+        },
       };
 
       const rzp = new window.Razorpay(options);
