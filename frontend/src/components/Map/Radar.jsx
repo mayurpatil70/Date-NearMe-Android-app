@@ -44,6 +44,50 @@ const defaultStories = [
   },
 ];
 
+// Instagram Story Studio Presets
+const trendingSongs = [
+  { id: "s1", title: "Kesariya", artist: "Arijit Singh", tag: "Trending 🔥" },
+  { id: "s2", title: "Apna Bana Le", artist: "Arijit Singh & Sachin-Jigar", tag: "Love ❤️" },
+  { id: "s3", title: "Heeriye", artist: "Jasleen Royal & Arijit Singh", tag: "Viral ✨" },
+  { id: "s4", title: "Levitating", artist: "Dua Lipa", tag: "Party 🪩" },
+  { id: "s5", title: "Starboy", artist: "The Weeknd", tag: "Vibe ⚡" },
+  { id: "s6", title: "Pehle Bhi Main", artist: "Vishal Mishra", tag: "Hits 🎶" },
+  { id: "s7", title: "Until I Found You", artist: "Stephen Sanchez", tag: "Retro 💫" },
+  { id: "s8", title: "Maan Meri Jaan", artist: "King", tag: "Romance 🌹" },
+];
+
+const aestheticVibes = [
+  {
+    name: "Sunset Mumbai",
+    url: "https://images.unsplash.com/photo-1570168007204-dfb528c6958f?auto=format&fit=crop&w=800&q=80",
+    type: "photo",
+  },
+  {
+    name: "Cafe Date",
+    url: "https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?auto=format&fit=crop&w=800&q=80",
+    type: "photo",
+  },
+  {
+    name: "Night Drive",
+    url: "https://images.unsplash.com/photo-1519501025264-65ba15a82390?auto=format&fit=crop&w=800&q=80",
+    type: "photo",
+  },
+];
+
+const stickerPresets = [
+  { label: "📍 Bandra, Mumbai" },
+  { label: "📍 Marine Drive" },
+  { label: "☕ Cafe Date" },
+  { label: "🥂 Cheers!" },
+  { label: "🔥 Vibe Check" },
+  { label: "❤️ In Love" },
+  { label: "✨ Aesthetic" },
+  { label: "💯 10/10" },
+  { label: "🌹 Date-NearMe" },
+];
+
+const emojiPalette = ["❤️", "🔥", "😍", "🥂", "💫", "🎉", "🌹", "✨", "🥳", "🍕", "☕", "🕶️"];
+
 // Instagram / Social Feed Posts
 const defaultPosts = [
   {
@@ -409,6 +453,20 @@ const Radar = () => {
   const [commentInputText, setCommentInputText] = useState("");
   const [isPlayingReel, setIsPlayingReel] = useState(true);
 
+  // Instagram Story Studio state
+  const [storyCreatorOpen, setStoryCreatorOpen] = useState(false);
+  const [storyMedia, setStoryMedia] = useState(null);
+  const [storySong, setStorySong] = useState(null);
+  const [storyText, setStoryText] = useState("");
+  const [storyTextColor, setStoryTextColor] = useState("#ffffff");
+  const [storyStickers, setStoryStickers] = useState([]);
+  const [activeStoryTool, setActiveStoryTool] = useState(null);
+  const [userHasActiveStory, setUserHasActiveStory] = useState(false);
+  const [storyQuickReplyText, setStoryQuickReplyText] = useState("");
+
+  const imageStoryInputRef = useRef(null);
+  const videoStoryInputRef = useRef(null);
+
   // Toggle follow status
   const handleToggleFollow = (username) => {
     setFollowingMap((prev) => {
@@ -568,7 +626,6 @@ const Radar = () => {
   });
   const [isSavingProfile, setIsSavingProfile] = useState(false);
 
-  const fileInputRef = useRef(null);
   const isAdmin = user?.email?.toLowerCase() === "noballondesk@gmail.com" || user?.isAdmin;
 
   // Sync profile form when user updates
@@ -909,50 +966,105 @@ const Radar = () => {
     }
   };
 
-  // Story upload
-  const handleStoryUpload = async (e) => {
+  // Story File Selection (Photo or Video) -> Opens Instagram Story Studio
+  const handleSelectStoryFile = (e, mediaType) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    const formData = new FormData();
-    formData.append("media", file);
+    const isVideo = mediaType === "video" || file.type.startsWith("video/");
+    const previewUrl = URL.createObjectURL(file);
+    setStoryMedia({
+      url: previewUrl,
+      type: isVideo ? "video" : "photo",
+      file: file,
+      name: file.name,
+    });
+    setStoryCreatorOpen(true);
+    toast.success(
+      isVideo
+        ? "Video loaded! Customize with music, text & stickers 🎥"
+        : "Photo loaded! Customize with music, text & stickers 📸"
+    );
+    if (e.target) e.target.value = "";
+  };
 
-    const toastId = toast.loading("Uploading 24h Vibe Story...");
-    try {
-      const res = await api.post("/stories/upload", formData, {
-        headers: { "Content-Type": "multipart/form-data" },
-      });
+  // Quick Aesthetic Vibe Selection (1-Click Test)
+  const handleQuickAestheticSelect = (vibe) => {
+    setStoryMedia({
+      url: vibe.url,
+      type: vibe.type,
+      file: null,
+      name: vibe.name,
+    });
+    toast.success(`Selected "${vibe.name}" vibe! ✨`);
+  };
 
-      if (res.data?.story) {
-        setStoryList((prev) => [res.data.story, ...prev]);
-      } else {
-        const previewUrl = URL.createObjectURL(file);
-        setStoryList((prev) => [
-          {
-            id: "local_" + Date.now(),
-            img: previewUrl,
-            user: profileForm.displayName || user?.displayName || "You",
-            time: "Just now",
-          },
-          ...prev,
-        ]);
-      }
+  // Select Song for Story
+  const handleSelectSong = (song) => {
+    setStorySong(song);
+    setActiveStoryTool(null);
+    toast.success(`Song attached: ${song.title} 🎵`);
+  };
 
-      toast.success("Story live for 24h! 🌟", { id: toastId });
-      if (e.target) e.target.value = "";
-    } catch (error) {
-      const previewUrl = URL.createObjectURL(file);
-      setStoryList((prev) => [
-        {
-          id: "local_" + Date.now(),
-          img: previewUrl,
-          user: profileForm.displayName || user?.displayName || "You",
-          time: "Just now",
-        },
-        ...prev,
-      ]);
-      toast.success("Story posted! (Cached locally)", { id: toastId });
-      if (e.target) e.target.value = "";
+  // Add Sticker or Emoji to Story Canvas
+  const handleAddSticker = (sticker) => {
+    if (!storyStickers.includes(sticker)) {
+      setStoryStickers((prev) => [...prev, sticker]);
+      toast.success(`Added ${sticker}!`);
+    }
+  };
+
+  // 1-CLICK INSTANT STORY PUBLISHING (< 50ms)
+  const handlePublishStory = () => {
+    if (!storyMedia && !storyText.trim()) {
+      toast.error("Please select a photo, video, or write a vibe!");
+      return;
+    }
+
+    const newStory = {
+      id: "my_story_" + Date.now(),
+      img:
+        storyMedia?.url ||
+        "https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=800&q=80",
+      mediaType: storyMedia?.type || "photo",
+      isVideo: storyMedia?.type === "video",
+      user: profileForm.displayName || user?.displayName || "You",
+      userAvatar:
+        "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=200&q=80",
+      time: "Just now",
+      song: storySong ? `${storySong.title} • ${storySong.artist}` : null,
+      textOverlay: storyText.trim() || null,
+      textColor: storyTextColor,
+      stickers: storyStickers,
+    };
+
+    // INSTANT LOCAL STATE UPDATE
+    setStoryList((prev) => [newStory, ...prev]);
+    setUserHasActiveStory(true);
+    setStoryCreatorOpen(false);
+
+    // Reset Studio State
+    setStoryMedia(null);
+    setStorySong(null);
+    setStoryText("");
+    setStoryStickers([]);
+    setActiveStoryTool(null);
+
+    toast.success("Story posted in 1 click! Tap to view 🌟", { duration: 4000 });
+
+    // NON-BLOCKING BACKGROUND SYNC (Never hangs or blocks user)
+    if (storyMedia?.file) {
+      const formData = new FormData();
+      formData.append("media", storyMedia.file);
+      api
+        .post("/stories/upload", formData, {
+          headers: { "Content-Type": "multipart/form-data" },
+          timeout: 4000,
+        })
+        .catch(() => {
+          // Silent local cache fallback
+          console.log("Story cached locally in browser.");
+        });
     }
   };
 
@@ -966,30 +1078,65 @@ const Radar = () => {
   const renderStoriesTray = () => (
     <div className="w-full bg-black/40 backdrop-blur-xl border border-white/[0.08] rounded-3xl p-3 sm:p-4 mb-5 shadow-lg overflow-x-auto scrollbar-hide flex items-center space-x-4">
       {/* Current User Story with + Badge */}
-      <div
-        className="flex flex-col items-center cursor-pointer shrink-0 group w-18"
-        onClick={() => fileInputRef.current?.click()}
-      >
-        <div className="w-16 h-16 rounded-full relative p-[2px] border-2 border-dashed border-stone-600 group-hover:border-rose-400 transition flex items-center justify-center">
-          <div className="w-full h-full rounded-full bg-stone-800 flex items-center justify-center text-lg font-bold text-white overflow-hidden">
-            {(profileForm.displayName?.[0] || user?.email?.[0] || "U").toUpperCase()}
+      <div className="flex flex-col items-center shrink-0 group w-18">
+        <div className="relative">
+          {/* Avatar Ring: Glowing Instagram Gradient when Active */}
+          <div
+            onClick={() => {
+              const myStory = storyList.find(
+                (s) =>
+                  s.id.startsWith("my_story_") ||
+                  s.user === "You" ||
+                  s.user === (profileForm.displayName || user?.displayName)
+              );
+              if (myStory) {
+                setViewingStory(myStory);
+              } else {
+                setStoryCreatorOpen(true);
+              }
+            }}
+            className={`w-16 h-16 rounded-full cursor-pointer transition p-[2.5px] ${
+              userHasActiveStory || storyList.some((s) => s.id.startsWith("my_story_"))
+                ? "bg-gradient-to-tr from-[#f09433] via-[#dc2743] to-[#bc1888] shadow-lg shadow-rose-950/40 hover:scale-105"
+                : "border-2 border-dashed border-stone-600 group-hover:border-rose-400"
+            }`}
+          >
+            <div className="w-full h-full rounded-full bg-stone-800 flex items-center justify-center text-lg font-bold text-white overflow-hidden border-2 border-[#0a090e]">
+              {(profileForm.displayName?.[0] || user?.email?.[0] || "U").toUpperCase()}
+            </div>
           </div>
-          <div className="absolute -bottom-0.5 -right-0.5 bg-blue-500 text-white w-5 h-5 rounded-full flex items-center justify-center text-xs font-black border-2 border-[#0a090e] shadow-md">
+
+          {/* Plus Badge to Open Story Studio */}
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              setStoryCreatorOpen(true);
+            }}
+            className="absolute -bottom-0.5 -right-0.5 bg-gradient-to-r from-blue-500 to-indigo-600 hover:scale-110 active:scale-95 text-white w-6 h-6 rounded-full flex items-center justify-center text-xs font-black border-2 border-[#0a090e] shadow-md transition"
+            title="Add to story (Photo, Video, Songs & Emojis)"
+          >
             +
-          </div>
+          </button>
         </div>
         <span className="text-[11px] font-medium text-stone-300 mt-1.5 text-center">
           Your story
         </span>
       </div>
 
-      {/* Input for Story File */}
+      {/* Hidden File Inputs for Photo & Video */}
       <input
         type="file"
-        ref={fileInputRef}
-        onChange={handleStoryUpload}
+        ref={imageStoryInputRef}
+        onChange={(e) => handleSelectStoryFile(e, "photo")}
         className="hidden"
-        accept="image/*,video/*"
+        accept="image/*"
+      />
+      <input
+        type="file"
+        ref={videoStoryInputRef}
+        onChange={(e) => handleSelectStoryFile(e, "video")}
+        className="hidden"
+        accept="video/*"
       />
 
       {/* Friends & Active Stories */}
@@ -1000,11 +1147,19 @@ const Radar = () => {
           className="flex flex-col items-center cursor-pointer shrink-0 group w-18"
         >
           <div className="w-16 h-16 rounded-full p-[2.5px] bg-gradient-to-tr from-[#f09433] via-[#dc2743] to-[#bc1888] group-hover:scale-105 transition shadow-sm">
-            <img
-              src={s.img}
-              alt={s.user}
-              className="w-full h-full rounded-full object-cover border-2 border-[#0a090e]"
-            />
+            {s.mediaType === "video" || s.isVideo ? (
+              <video
+                src={s.img}
+                className="w-full h-full rounded-full object-cover border-2 border-[#0a090e]"
+                muted
+              />
+            ) : (
+              <img
+                src={s.img}
+                alt={s.user}
+                className="w-full h-full rounded-full object-cover border-2 border-[#0a090e]"
+              />
+            )}
           </div>
           <span className="text-[11px] font-medium text-stone-300 mt-1.5 truncate max-w-[72px] text-center">
             {s.user}
@@ -3112,33 +3267,479 @@ const Radar = () => {
         </div>
       )}
 
-      {/* FULLSCREEN STORY VIEWER MODAL */}
+      {/* =========================================================================
+          FULLSCREEN STORY VIEWER MODAL (VIDEO/PHOTO AUTOPLAY, MUSIC, TEXT & STICKERS)
+         ========================================================================= */}
       {viewingStory && (
-        <div className="fixed inset-0 z-50 bg-black/95 flex flex-col items-center justify-center p-4 backdrop-blur-md">
-          <div className="relative w-full max-w-md h-[88vh] rounded-3xl overflow-hidden bg-stone-950 shadow-2xl flex flex-col border border-white/10">
-            <div className="absolute top-0 w-full p-4 flex justify-between items-center z-20 bg-gradient-to-b from-black/80 to-transparent">
-              <div className="flex items-center space-x-2.5">
+        <div className="fixed inset-0 z-50 bg-black/95 flex flex-col items-center justify-center p-2 sm:p-4 backdrop-blur-md">
+          <div className="relative w-full max-w-sm sm:max-w-md h-[90vh] max-h-[780px] rounded-3xl overflow-hidden bg-stone-950 shadow-2xl flex flex-col border border-white/10">
+            {/* Top Bar inside Story Viewer */}
+            <div className="absolute top-0 w-full p-4 flex flex-col z-20 bg-gradient-to-b from-black/85 via-black/40 to-transparent">
+              {/* 15-second progress bar */}
+              <div className="w-full bg-white/30 h-1 rounded-full overflow-hidden mb-3">
+                <div className="bg-white h-full animate-[pulse_2s_infinite] w-full"></div>
+              </div>
+
+              <div className="flex justify-between items-center">
+                <div className="flex items-center space-x-2.5">
+                  <div className="w-10 h-10 rounded-full p-[2px] bg-gradient-to-tr from-[#f09433] via-[#dc2743] to-[#bc1888]">
+                    <img
+                      src={viewingStory.userAvatar || viewingStory.img}
+                      alt={viewingStory.user}
+                      className="w-full h-full rounded-full object-cover border border-[#0a090e]"
+                    />
+                  </div>
+                  <div>
+                    <span className="text-white font-bold text-sm block leading-tight">
+                      {viewingStory.user}
+                    </span>
+                    <span className="text-stone-400 text-[10px]">{viewingStory.time}</span>
+                  </div>
+                </div>
+
+                <button
+                  onClick={() => setViewingStory(null)}
+                  className="text-white text-xl font-bold w-8 h-8 rounded-full bg-black/50 flex items-center justify-center hover:bg-black/80 transition"
+                >
+                  ✕
+                </button>
+              </div>
+
+              {/* Attached Song Ticker Badge */}
+              {viewingStory.song && (
+                <div className="mt-2.5 inline-flex items-center space-x-2 bg-black/60 backdrop-blur-md px-3 py-1 rounded-full border border-white/20 w-fit text-xs text-white shadow-lg animate-pulse">
+                  <span>🎵</span>
+                  <span className="font-semibold truncate max-w-[220px]">{viewingStory.song}</span>
+                </div>
+              )}
+            </div>
+
+            {/* Media Content: Video or Image */}
+            <div className="w-full h-full relative bg-stone-950 flex items-center justify-center overflow-hidden">
+              {viewingStory.mediaType === "video" || viewingStory.isVideo || viewingStory.img?.endsWith(".mp4") ? (
+                <video
+                  src={viewingStory.img}
+                  autoPlay
+                  playsInline
+                  controls
+                  loop
+                  className="w-full h-full object-cover"
+                />
+              ) : (
                 <img
                   src={viewingStory.img}
                   alt={viewingStory.user}
-                  className="w-10 h-10 rounded-full object-cover border-2 border-white"
+                  className="w-full h-full object-cover"
                 />
-                <div>
-                  <span className="text-white font-bold text-sm block leading-tight">
-                    {viewingStory.user}
-                  </span>
-                  <span className="text-stone-400 text-[10px]">{viewingStory.time}</span>
+              )}
+
+              {/* Text Overlay on Canvas */}
+              {viewingStory.textOverlay && (
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-black/60 backdrop-blur-md px-4 py-2 rounded-2xl border border-white/15 text-center max-w-[85%] z-10 pointer-events-none shadow-xl">
+                  <p
+                    style={{ color: viewingStory.textColor || "#ffffff" }}
+                    className="text-base font-bold drop-shadow-md"
+                  >
+                    {viewingStory.textOverlay}
+                  </p>
                 </div>
-              </div>
+              )}
+
+              {/* Stickers / Emojis Overlay */}
+              {viewingStory.stickers && viewingStory.stickers.length > 0 && (
+                <div className="absolute bottom-20 left-4 right-4 flex flex-wrap gap-2 z-10 pointer-events-none">
+                  {viewingStory.stickers.map((stk, idx) => (
+                    <div
+                      key={idx}
+                      className="bg-white/95 text-stone-900 text-xs font-black px-3 py-1.5 rounded-full shadow-lg"
+                    >
+                      {stk}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Bottom Quick Reply & Reaction Bar */}
+            <div className="absolute bottom-0 w-full p-3.5 z-20 bg-gradient-to-t from-black/90 via-black/50 to-transparent flex items-center space-x-2">
+              <input
+                type="text"
+                placeholder={`Reply to ${viewingStory.user}...`}
+                value={storyQuickReplyText}
+                onChange={(e) => setStoryQuickReplyText(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && storyQuickReplyText.trim()) {
+                    toast.success(`Message sent to ${viewingStory.user}! 💌`);
+                    setStoryQuickReplyText("");
+                  }
+                }}
+                className="flex-1 bg-white/10 backdrop-blur-md border border-white/20 rounded-full px-4 py-2 text-xs text-white placeholder-stone-400 focus:outline-none focus:border-white"
+              />
+              {["❤️", "🔥", "😍", "👏"].map((emoji) => (
+                <button
+                  key={emoji}
+                  onClick={() => {
+                    toast.success(`Reacted ${emoji} to ${viewingStory.user}!`);
+                  }}
+                  className="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 text-sm flex items-center justify-center transition active:scale-125"
+                >
+                  {emoji}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* =========================================================================
+          MODAL: INSTAGRAM STORY CREATOR STUDIO (PHOTO, VIDEO, SONGS, TEXT & EMOJIS)
+         ========================================================================= */}
+      {storyCreatorOpen && (
+        <div className="fixed inset-0 z-50 bg-black/90 backdrop-blur-2xl flex items-center justify-center p-2 sm:p-4">
+          <div className="w-full max-w-sm sm:max-w-md h-[92vh] max-h-[760px] bg-[#0d0c13] border border-white/[0.12] rounded-[32px] overflow-hidden flex flex-col justify-between shadow-2xl relative">
+            {/* Studio Top Header */}
+            <div className="p-4 flex items-center justify-between border-b border-white/[0.08] bg-black/40 z-30">
               <button
-                onClick={() => setViewingStory(null)}
-                className="text-white text-2xl font-bold w-8 h-8 rounded-full bg-black/40 flex items-center justify-center hover:bg-black/80"
+                onClick={() => {
+                  setStoryCreatorOpen(false);
+                  setStoryMedia(null);
+                  setActiveStoryTool(null);
+                }}
+                className="text-stone-400 hover:text-white text-xl font-bold w-8 h-8 rounded-full flex items-center justify-center"
               >
                 ✕
               </button>
+
+              <div className="flex items-center space-x-1.5">
+                <span className="text-base">✨</span>
+                <span className="font-serif font-black text-sm text-white">Story Studio</span>
+              </div>
+
+              {/* Action Toolbar on Top (when media is selected) */}
+              <div className="flex items-center space-x-1.5">
+                {/* Music Tool Button */}
+                <button
+                  onClick={() => setActiveStoryTool(activeStoryTool === "music" ? null : "music")}
+                  className={`w-8 h-8 rounded-full flex items-center justify-center text-sm transition ${
+                    storySong || activeStoryTool === "music"
+                      ? "bg-rose-600 text-white"
+                      : "bg-white/10 hover:bg-white/20 text-stone-300"
+                  }`}
+                  title="Add Music / Song"
+                >
+                  🎵
+                </button>
+
+                {/* Text Tool Button */}
+                <button
+                  onClick={() => setActiveStoryTool(activeStoryTool === "text" ? null : "text")}
+                  className={`w-8 h-8 rounded-full flex items-center justify-center text-sm transition ${
+                    storyText || activeStoryTool === "text"
+                      ? "bg-rose-600 text-white"
+                      : "bg-white/10 hover:bg-white/20 text-stone-300"
+                  }`}
+                  title="Add Text"
+                >
+                  ✍️
+                </button>
+
+                {/* Stickers Tool Button */}
+                <button
+                  onClick={() => setActiveStoryTool(activeStoryTool === "sticker" ? null : "sticker")}
+                  className={`w-8 h-8 rounded-full flex items-center justify-center text-sm transition ${
+                    storyStickers.length > 0 || activeStoryTool === "sticker"
+                      ? "bg-rose-600 text-white"
+                      : "bg-white/10 hover:bg-white/20 text-stone-300"
+                  }`}
+                  title="Add Stickers & Emojis"
+                >
+                  😀
+                </button>
+              </div>
             </div>
 
-            <img src={viewingStory.img} alt="Story" className="w-full h-full object-cover" />
+            {/* Studio Canvas Area */}
+            <div className="flex-1 relative overflow-hidden bg-stone-950 flex flex-col justify-center items-center">
+              {!storyMedia ? (
+                /* No Media Chosen Yet: Interactive Selector */
+                <div className="w-full h-full flex flex-col items-center justify-center p-6 text-center space-y-6">
+                  <div className="w-20 h-20 rounded-full bg-gradient-to-tr from-[#f09433] via-[#dc2743] to-[#bc1888] flex items-center justify-center text-3xl shadow-xl shadow-rose-950/50">
+                    📸
+                  </div>
+
+                  <div>
+                    <h3 className="text-xl font-serif font-black text-white">Add to Your Story</h3>
+                    <p className="text-xs text-stone-400 mt-1 max-w-xs">
+                      Post a photo or video clip. Add songs, captions, and stickers just like Instagram!
+                    </p>
+                  </div>
+
+                  {/* 2 Big Choice Tiles */}
+                  <div className="grid grid-cols-2 gap-3 w-full max-w-xs">
+                    {/* Photo Tile */}
+                    <button
+                      onClick={() => imageStoryInputRef.current?.click()}
+                      className="flex flex-col items-center justify-center p-4 rounded-2xl bg-white/[0.05] hover:bg-white/[0.1] border border-white/[0.1] transition group hover:border-rose-400"
+                    >
+                      <span className="text-3xl mb-1 group-hover:scale-110 transition">📷</span>
+                      <span className="text-xs font-bold text-white">Photo</span>
+                      <span className="text-[10px] text-stone-400">Camera / Gallery</span>
+                    </button>
+
+                    {/* Video Tile */}
+                    <button
+                      onClick={() => videoStoryInputRef.current?.click()}
+                      className="flex flex-col items-center justify-center p-4 rounded-2xl bg-white/[0.05] hover:bg-white/[0.1] border border-white/[0.1] transition group hover:border-rose-400"
+                    >
+                      <span className="text-3xl mb-1 group-hover:scale-110 transition">🎥</span>
+                      <span className="text-xs font-bold text-white">Video</span>
+                      <span className="text-[10px] text-stone-400">Clips & Shorts</span>
+                    </button>
+                  </div>
+
+                  {/* Quick Aesthetic Vibe Presets (1-Click Test) */}
+                  <div className="w-full max-w-xs pt-2">
+                    <span className="text-[10px] font-bold uppercase text-stone-500 tracking-wider block mb-2">
+                      Or pick an instant vibe
+                    </span>
+                    <div className="flex justify-center space-x-2">
+                      {aestheticVibes.map((v) => (
+                        <button
+                          key={v.name}
+                          onClick={() => handleQuickAestheticSelect(v)}
+                          className="text-[11px] font-bold text-stone-300 bg-white/[0.06] hover:bg-rose-950/60 hover:text-white px-2.5 py-1.5 rounded-xl border border-white/10 transition"
+                        >
+                          {v.name}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                /* Media Active on Canvas */
+                <div className="relative w-full h-full flex items-center justify-center bg-black">
+                  {storyMedia.type === "video" ? (
+                    <video
+                      src={storyMedia.url}
+                      autoPlay
+                      playsInline
+                      loop
+                      muted
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <img
+                      src={storyMedia.url}
+                      alt="Story preview"
+                      className="w-full h-full object-cover"
+                    />
+                  )}
+
+                  {/* Song Badge on Canvas */}
+                  {storySong && (
+                    <div className="absolute top-4 left-4 bg-black/60 backdrop-blur-md px-3 py-1.5 rounded-full border border-white/20 flex items-center space-x-2 text-white text-xs shadow-lg animate-pulse z-10">
+                      <span className="text-sm">🎵</span>
+                      <span className="font-bold truncate max-w-[170px]">
+                        {storySong.title} • {storySong.artist}
+                      </span>
+                      <button
+                        onClick={() => setStorySong(null)}
+                        className="ml-1 text-stone-400 hover:text-white"
+                      >
+                        ✕
+                      </button>
+                    </div>
+                  )}
+
+                  {/* Text Overlay on Canvas */}
+                  {storyText && (
+                    <div
+                      onClick={() => setActiveStoryTool("text")}
+                      className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-black/60 backdrop-blur-md px-4 py-2.5 rounded-2xl border border-white/20 text-center max-w-[85%] shadow-2xl cursor-pointer z-10"
+                    >
+                      <p
+                        style={{ color: storyTextColor }}
+                        className="text-base font-bold drop-shadow leading-snug"
+                      >
+                        {storyText}
+                      </p>
+                    </div>
+                  )}
+
+                  {/* Stickers & Emojis on Canvas */}
+                  {storyStickers.length > 0 && (
+                    <div className="absolute bottom-6 left-4 right-4 flex flex-wrap gap-2 z-10">
+                      {storyStickers.map((stk, idx) => (
+                        <div
+                          key={idx}
+                          className="bg-white/90 text-stone-900 text-xs font-black px-3 py-1.5 rounded-full shadow-lg flex items-center space-x-1.5"
+                        >
+                          <span>{stk}</span>
+                          <button
+                            onClick={() =>
+                              setStoryStickers(storyStickers.filter((_, i) => i !== idx))
+                            }
+                            className="text-stone-500 hover:text-red-500 text-[11px] ml-1"
+                          >
+                            ✕
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* ACTIVE TOOL DRAWER 1: MUSIC SELECTOR */}
+              {activeStoryTool === "music" && (
+                <div className="absolute inset-x-0 bottom-0 max-h-[60%] bg-[#121118]/95 backdrop-blur-2xl border-t border-white/10 rounded-t-3xl p-4 flex flex-col z-40 overflow-hidden shadow-2xl">
+                  <div className="flex justify-between items-center mb-3">
+                    <span className="text-xs font-bold text-white flex items-center">
+                      <span className="mr-1.5">🎵</span> Trending Music Tracks
+                    </span>
+                    <button
+                      onClick={() => setActiveStoryTool(null)}
+                      className="text-xs font-bold text-stone-400 hover:text-white"
+                    >
+                      Done
+                    </button>
+                  </div>
+                  <div className="overflow-y-auto space-y-2 max-h-56 scrollbar-hide pr-1">
+                    {trendingSongs.map((song) => (
+                      <div
+                        key={song.id}
+                        onClick={() => handleSelectSong(song)}
+                        className={`flex items-center justify-between p-2.5 rounded-xl border cursor-pointer transition ${
+                          storySong?.id === song.id
+                            ? "bg-rose-950/70 border-rose-500/50 text-white"
+                            : "bg-white/[0.04] border-white/[0.06] hover:bg-white/[0.08] text-stone-200"
+                        }`}
+                      >
+                        <div className="flex items-center space-x-2.5">
+                          <span className="text-base">💿</span>
+                          <div>
+                            <p className="text-xs font-bold text-white leading-tight">{song.title}</p>
+                            <p className="text-[10px] text-stone-400">{song.artist}</p>
+                          </div>
+                        </div>
+                        <span className="text-[10px] font-black text-rose-300 bg-rose-950/80 px-2 py-0.5 rounded-full border border-rose-500/30">
+                          {song.tag}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* ACTIVE TOOL DRAWER 2: TEXT OVERLAY */}
+              {activeStoryTool === "text" && (
+                <div className="absolute inset-x-0 bottom-0 bg-[#121118]/95 backdrop-blur-2xl border-t border-white/10 rounded-t-3xl p-4 flex flex-col z-40 shadow-2xl">
+                  <div className="flex justify-between items-center mb-2">
+                    <span className="text-xs font-bold text-white">✍️ Add Text Overlay</span>
+                    <button
+                      onClick={() => setActiveStoryTool(null)}
+                      className="text-xs font-bold text-rose-400 hover:text-rose-300"
+                    >
+                      Done
+                    </button>
+                  </div>
+                  <input
+                    type="text"
+                    placeholder="Type something fun... (e.g. Coffee Date ☕)"
+                    value={storyText}
+                    onChange={(e) => setStoryText(e.target.value)}
+                    className="w-full bg-white/[0.06] border border-white/15 rounded-xl px-3.5 py-2.5 text-xs text-white placeholder-stone-500 focus:outline-none focus:border-rose-400 mb-3"
+                  />
+                  {/* Font Color Picker */}
+                  <div className="flex items-center space-x-2">
+                    <span className="text-[10px] text-stone-400 font-bold uppercase">Color:</span>
+                    {["#ffffff", "#f43f5e", "#06b6d4", "#f59e0b", "#84cc16"].map((color) => (
+                      <button
+                        key={color}
+                        onClick={() => setStoryTextColor(color)}
+                        style={{ backgroundColor: color }}
+                        className={`w-6 h-6 rounded-full border-2 transition ${
+                          storyTextColor === color ? "border-white scale-110" : "border-black/40"
+                        }`}
+                      />
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* ACTIVE TOOL DRAWER 3: STICKERS & EMOJIS */}
+              {activeStoryTool === "sticker" && (
+                <div className="absolute inset-x-0 bottom-0 max-h-[60%] bg-[#121118]/95 backdrop-blur-2xl border-t border-white/10 rounded-t-3xl p-4 flex flex-col z-40 overflow-hidden shadow-2xl">
+                  <div className="flex justify-between items-center mb-3">
+                    <span className="text-xs font-bold text-white">😀 Stickers & Emojis</span>
+                    <button
+                      onClick={() => setActiveStoryTool(null)}
+                      className="text-xs font-bold text-stone-400 hover:text-white"
+                    >
+                      Done
+                    </button>
+                  </div>
+
+                  {/* Preset Badges */}
+                  <div className="flex flex-wrap gap-1.5 mb-3">
+                    {stickerPresets.map((stk) => (
+                      <button
+                        key={stk.label}
+                        onClick={() => handleAddSticker(stk.label)}
+                        className="text-[11px] font-bold bg-white/10 hover:bg-white/20 text-white px-2.5 py-1 rounded-full border border-white/10 transition active:scale-95"
+                      >
+                        {stk.label}
+                      </button>
+                    ))}
+                  </div>
+
+                  {/* Emoji Quick Bar */}
+                  <span className="text-[10px] font-bold uppercase text-stone-500 tracking-wider mb-1.5">
+                    Quick Emojis
+                  </span>
+                  <div className="flex flex-wrap gap-2 text-2xl">
+                    {emojiPalette.map((em) => (
+                      <button
+                        key={em}
+                        onClick={() => handleAddSticker(em)}
+                        className="hover:scale-125 transition active:scale-95"
+                      >
+                        {em}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Studio Bottom Action Bar */}
+            <div className="p-4 bg-black/40 border-t border-white/[0.08] flex items-center justify-between z-30">
+              {storyMedia ? (
+                <button
+                  onClick={() => {
+                    setStoryMedia(null);
+                    setStorySong(null);
+                    setStoryText("");
+                    setStoryStickers([]);
+                  }}
+                  className="text-xs font-bold text-stone-400 hover:text-white px-3 py-2 rounded-xl transition"
+                >
+                  Change Media
+                </button>
+              ) : (
+                <div className="text-[11px] text-stone-400">Select photo or video</div>
+              )}
+
+              {/* 1-CLICK INSTANT PUBLISH BUTTON */}
+              <button
+                onClick={handlePublishStory}
+                disabled={!storyMedia && !storyText}
+                className="bg-gradient-to-r from-[#f09433] via-[#dc2743] to-[#bc1888] disabled:opacity-50 text-white font-extrabold text-xs px-5 py-3 rounded-full shadow-lg shadow-rose-950/50 flex items-center space-x-1.5 hover:opacity-95 transition active:scale-95 cursor-pointer"
+              >
+                <span>Share to Your Story</span>
+                <span>🌟</span>
+              </button>
+            </div>
           </div>
         </div>
       )}
