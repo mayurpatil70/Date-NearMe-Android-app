@@ -4,31 +4,134 @@ import toast from "react-hot-toast";
 import { AuthContext } from "../../Context/AuthContext";
 import api from "../../api/axiosConfig";
 
-// Default 24h Vibe Stories
+// Default Instagram-style 24h Stories matching Screenshot 3
 const defaultStories = [
   {
-    id: 1,
-    img: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=600&q=80",
-    user: "Aisha",
+    id: "s1",
+    img: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=600&q=80",
+    user: "mr_mayurkoli_111k",
     time: "2h ago",
   },
   {
-    id: 2,
-    img: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=600&q=80",
-    user: "Rahul",
+    id: "s2",
+    img: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=600&q=80",
+    user: "kalpesh_ppatil09",
     time: "4h ago",
   },
   {
-    id: 3,
-    img: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=600&q=80",
-    user: "Priya",
+    id: "s3",
+    img: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=600&q=80",
+    user: "shubham_wagh",
     time: "6h ago",
   },
   {
-    id: 4,
-    img: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=600&q=80",
-    user: "Kabir",
-    time: "9h ago",
+    id: "s4",
+    img: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=600&q=80",
+    user: "aisha_art",
+    time: "8h ago",
+  },
+  {
+    id: "s5",
+    img: "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?auto=format&fit=crop&w=600&q=80",
+    user: "rahul_fit",
+    time: "11h ago",
+  },
+  {
+    id: "s6",
+    img: "https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=600&q=80",
+    user: "priya_tours",
+    time: "14h ago",
+  },
+];
+
+// Instagram / Social Feed Posts
+const defaultPosts = [
+  {
+    id: "p_1",
+    user: "chennaiipl",
+    userAvatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=200&q=80",
+    verified: true,
+    location: "Mumbai, Maharashtra",
+    img: "https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=1200&q=80",
+    likes: 65600,
+    liked: false,
+    caption: "Squad goals & date vibes! Team dinner at Social HKV 💛🔥 #DateNearMe #WhistlePodu #Vibes",
+    time: "2 hours ago",
+    comments: [
+      { user: "mr_mayurkoli_111k", text: "Pure fire guys! 🔥🔥" },
+      { user: "aisha_art", text: "The lighting in this venue is gorgeous 😍" },
+    ],
+  },
+  {
+    id: "p_2",
+    user: "mr_mayurkoli_111k",
+    userAvatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=200&q=80",
+    verified: true,
+    location: "Blue Tokai, Bandra West",
+    img: "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=1200&q=80",
+    likes: 1240,
+    liked: false,
+    caption: "First coffee date went surprisingly smooth ☕ Got 10% off bill using Date-NearMe QR code! Highly recommend Blue Tokai Bandra.",
+    time: "5 hours ago",
+    comments: [
+      { user: "kalpesh_ppatil09", text: "Bro did she say yes to date #2? 😂" },
+      { user: "shubham_wagh", text: "That pour-over coffee there is top tier!" },
+    ],
+  },
+  {
+    id: "p_3",
+    user: "priya_tours",
+    userAvatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=200&q=80",
+    verified: true,
+    location: "Indiranagar, Bangalore",
+    img: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=1200&q=80",
+    likes: 3890,
+    liked: false,
+    caption: "Looking for someone who can match my level of enthusiasm for weekend road trips & South Indian filter coffee 🚗☕ #BangaloreDating #PureVeg",
+    time: "1 day ago",
+    comments: [
+      { user: "rahul_fit", text: "Count me in for Coorg next Saturday!" },
+    ],
+  },
+];
+
+// YouTube / Instagram Reels Feed
+const defaultReels = [
+  {
+    id: "r_1",
+    user: "aisha_art",
+    userAvatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=200&q=80",
+    videoPoster: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=800&q=80",
+    title: "How Indian Gen Z dates vs how our parents dated 😂",
+    audio: "Original Audio - AP Dhillon & Diljit",
+    likes: 18400,
+    comments: 420,
+    shares: 890,
+    liked: false,
+  },
+  {
+    id: "r_2",
+    user: "kabir_vibe",
+    userAvatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=200&q=80",
+    videoPoster: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=800&q=80",
+    title: "Best 3 first date spots in South Bombay you didn't know about ☕📍",
+    audio: "Kishore Kumar - Chhookar Mere Mann Ko (Lofi Remix)",
+    likes: 24900,
+    comments: 615,
+    shares: 1200,
+    liked: false,
+  },
+  {
+    id: "r_3",
+    user: "priya_tours",
+    userAvatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=200&q=80",
+    videoPoster: "https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=800&q=80",
+    title: "POV: You find someone who actually hates small talk as much as you do 💫",
+    audio: "Arijit Singh - O Maahi (Slowed & Reverb)",
+    likes: 31200,
+    comments: 870,
+    shares: 2450,
+    liked: false,
   },
 ];
 
@@ -284,8 +387,120 @@ const Radar = () => {
   const navigate = useNavigate();
   const { user, updateUserProfile, logout } = useContext(AuthContext);
 
-  // Tabs: 'discover' | 'standouts' | 'likes' | 'matches' | 'cafes' | 'affiliate' | 'profile'
-  const [activeTab, setActiveTab] = useState("discover");
+  // Tabs: 'feed' | 'reels' | 'discover' | 'standouts' | 'likes' | 'matches' | 'cafes' | 'affiliate' | 'profile'
+  const [activeTab, setActiveTab] = useState("feed");
+
+  // Social Feed & Following state (Instagram/YouTube ecosystem)
+  const [followingMap, setFollowingMap] = useState({
+    chennaiipl: true,
+    mr_mayurkoli_111k: false,
+    kalpesh_ppatil09: false,
+    shubham_wagh: false,
+    aisha_art: false,
+    priya_tours: true,
+    kabir_vibe: false,
+  });
+  const [postsList, setPostsList] = useState(defaultPosts);
+  const [reelsList, setReelsList] = useState(defaultReels);
+  const [newPostModalOpen, setNewPostModalOpen] = useState(false);
+  const [newPostCaption, setNewPostCaption] = useState("");
+  const [newPostImg, setNewPostImg] = useState("");
+  const [activeCommentPost, setActiveCommentPost] = useState(null);
+  const [commentInputText, setCommentInputText] = useState("");
+  const [isPlayingReel, setIsPlayingReel] = useState(true);
+
+  // Toggle follow status
+  const handleToggleFollow = (username) => {
+    setFollowingMap((prev) => {
+      const isNowFollowing = !prev[username];
+      if (isNowFollowing) {
+        toast.success(`Following @${username} ✨`);
+      } else {
+        toast(`Unfollowed @${username}`, { icon: "👋" });
+      }
+      return { ...prev, [username]: isNowFollowing };
+    });
+  };
+
+  // Like a post
+  const handleLikePost = (postId) => {
+    setPostsList((prev) =>
+      prev.map((p) => {
+        if (p.id === postId) {
+          const isLiked = !p.liked;
+          return {
+            ...p,
+            liked: isLiked,
+            likes: isLiked ? p.likes + 1 : p.likes - 1,
+          };
+        }
+        return p;
+      })
+    );
+  };
+
+  // Add comment to post
+  const handleAddComment = (postId) => {
+    if (!commentInputText.trim()) return;
+    const author = profileForm.displayName || user?.displayName || "You";
+    setPostsList((prev) =>
+      prev.map((p) => {
+        if (p.id === postId) {
+          return {
+            ...p,
+            comments: [...p.comments, { user: author, text: commentInputText.trim() }],
+          };
+        }
+        return p;
+      })
+    );
+    setCommentInputText("");
+    toast.success("Comment posted! 💬");
+  };
+
+  // Like a reel
+  const handleLikeReel = (reelId) => {
+    setReelsList((prev) =>
+      prev.map((r) => {
+        if (r.id === reelId) {
+          const isLiked = !r.liked;
+          return {
+            ...r,
+            liked: isLiked,
+            likes: isLiked ? r.likes + 1 : r.likes - 1,
+          };
+        }
+        return r;
+      })
+    );
+  };
+
+  // Create a new feed post
+  const handleCreatePost = (e) => {
+    e.preventDefault();
+    if (!newPostImg && !newPostCaption) {
+      toast.error("Please provide an image URL or caption!");
+      return;
+    }
+    const newPost = {
+      id: "p_" + Date.now(),
+      user: profileForm.displayName || user?.displayName || "You",
+      userAvatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=200&q=80",
+      verified: true,
+      location: "Active in Mumbai",
+      img: newPostImg || "https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=1200&q=80",
+      likes: 1,
+      liked: true,
+      caption: newPostCaption,
+      time: "Just now",
+      comments: [],
+    };
+    setPostsList([newPost, ...postsList]);
+    setNewPostModalOpen(false);
+    setNewPostCaption("");
+    setNewPostImg("");
+    toast.success("Post published to Date-NearMe feed! 🚀");
+  };
 
   // GPS & Candidates
   const [userLocation, setUserLocation] = useState(null);
@@ -747,8 +962,60 @@ const Radar = () => {
     toast.success("Affiliate link copied to clipboard! 📋");
   };
 
+  // Instagram-style Stories Tray matching Screenshot 3
+  const renderStoriesTray = () => (
+    <div className="w-full bg-black/40 backdrop-blur-xl border border-white/[0.08] rounded-3xl p-3 sm:p-4 mb-5 shadow-lg overflow-x-auto scrollbar-hide flex items-center space-x-4">
+      {/* Current User Story with + Badge */}
+      <div
+        className="flex flex-col items-center cursor-pointer shrink-0 group w-18"
+        onClick={() => fileInputRef.current?.click()}
+      >
+        <div className="w-16 h-16 rounded-full relative p-[2px] border-2 border-dashed border-stone-600 group-hover:border-rose-400 transition flex items-center justify-center">
+          <div className="w-full h-full rounded-full bg-stone-800 flex items-center justify-center text-lg font-bold text-white overflow-hidden">
+            {(profileForm.displayName?.[0] || user?.email?.[0] || "U").toUpperCase()}
+          </div>
+          <div className="absolute -bottom-0.5 -right-0.5 bg-blue-500 text-white w-5 h-5 rounded-full flex items-center justify-center text-xs font-black border-2 border-[#0a090e] shadow-md">
+            +
+          </div>
+        </div>
+        <span className="text-[11px] font-medium text-stone-300 mt-1.5 text-center">
+          Your story
+        </span>
+      </div>
+
+      {/* Input for Story File */}
+      <input
+        type="file"
+        ref={fileInputRef}
+        onChange={handleStoryUpload}
+        className="hidden"
+        accept="image/*,video/*"
+      />
+
+      {/* Friends & Active Stories */}
+      {storyList.map((s) => (
+        <div
+          key={s.id}
+          onClick={() => setViewingStory(s)}
+          className="flex flex-col items-center cursor-pointer shrink-0 group w-18"
+        >
+          <div className="w-16 h-16 rounded-full p-[2.5px] bg-gradient-to-tr from-[#f09433] via-[#dc2743] to-[#bc1888] group-hover:scale-105 transition shadow-sm">
+            <img
+              src={s.img}
+              alt={s.user}
+              className="w-full h-full rounded-full object-cover border-2 border-[#0a090e]"
+            />
+          </div>
+          <span className="text-[11px] font-medium text-stone-300 mt-1.5 truncate max-w-[72px] text-center">
+            {s.user}
+          </span>
+        </div>
+      ))}
+    </div>
+  );
+
   return (
-    <div className="min-h-screen w-full bg-[#0a090e] font-sans text-white flex flex-col items-center pb-24 selection:bg-[#711a31] selection:text-white relative overflow-x-hidden">
+    <div className="min-h-screen w-full bg-[#0a090e] font-sans text-white selection:bg-[#711a31] selection:text-white relative overflow-x-hidden">
       {/* AMBIENT FROSTED GLASS BACKGROUND REFLECTIONS */}
       <div className="fixed inset-0 z-0 pointer-events-none overflow-hidden">
         <div className="absolute -top-32 left-1/4 w-[500px] h-[500px] bg-[#711a31]/20 rounded-full blur-[120px] animate-pulse"></div>
@@ -756,13 +1023,339 @@ const Radar = () => {
         <div className="absolute bottom-10 left-10 w-[400px] h-[400px] bg-amber-600/10 rounded-full blur-[100px]"></div>
       </div>
 
-      {/* TOP GLASS HEADER */}
-      <header className="sticky top-0 w-full max-w-lg z-40 bg-black/60 backdrop-blur-2xl border-b border-white/[0.08] px-4 py-3 flex justify-between items-center shadow-lg">
+      {/* =========================================================================
+          DESKTOP LEFT SIDEBAR NAVIGATION (Instagram & Twitter Web Style)
+         ========================================================================= */}
+      <aside className="hidden lg:flex flex-col justify-between fixed top-0 left-0 bottom-0 w-64 xl:w-72 bg-[#0c0b12]/95 backdrop-blur-2xl border-r border-white/[0.08] p-5 z-40">
+        <div className="flex flex-col space-y-6">
+          {/* Brand / Logo */}
+          <div
+            className="flex items-center space-x-3 cursor-pointer py-1 px-2 group"
+            onClick={() => {
+              setActiveTab("feed");
+              window.scrollTo({ top: 0, behavior: "smooth" });
+            }}
+          >
+            <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-[#711a31] via-rose-600 to-amber-500 text-white flex items-center justify-center font-serif text-xl font-black shadow-lg shadow-rose-950/50 group-hover:scale-105 transition">
+              H
+            </div>
+            <div>
+              <div className="flex items-center space-x-1.5">
+                <span className="font-serif text-xl font-black tracking-tight text-white">
+                  Date-NearMe
+                </span>
+              </div>
+              <span className="text-[10px] font-sans font-extrabold text-rose-400 uppercase tracking-widest bg-rose-950/60 px-2 py-0.5 rounded-full border border-rose-500/30">
+                Social & Dating
+              </span>
+            </div>
+          </div>
+
+          {/* Navigation Links */}
+          <nav className="flex flex-col space-y-1.5 text-sm font-semibold">
+            {/* 1. Feed (Instagram) */}
+            <button
+              onClick={() => {
+                setActiveTab("feed");
+                window.scrollTo({ top: 0, behavior: "smooth" });
+              }}
+              className={`flex items-center space-x-3.5 px-4 py-3 rounded-2xl transition ${
+                activeTab === "feed"
+                  ? "bg-[#711a31] text-white shadow-lg shadow-rose-950/40"
+                  : "text-stone-400 hover:text-white hover:bg-white/[0.05]"
+              }`}
+            >
+              <span className="text-xl">📱</span>
+              <span>Social Feed</span>
+            </button>
+
+            {/* 2. Reels (YouTube Shorts / IG Reels) */}
+            <button
+              onClick={() => {
+                setActiveTab("reels");
+                window.scrollTo({ top: 0, behavior: "smooth" });
+              }}
+              className={`flex items-center space-x-3.5 px-4 py-3 rounded-2xl transition ${
+                activeTab === "reels"
+                  ? "bg-[#711a31] text-white shadow-lg shadow-rose-950/40"
+                  : "text-stone-400 hover:text-white hover:bg-white/[0.05]"
+              }`}
+            >
+              <span className="text-xl">🎬</span>
+              <span>Reels & Shorts</span>
+            </button>
+
+            {/* 3. Discover (Hinge Dating Stream) */}
+            <button
+              onClick={() => {
+                setActiveTab("discover");
+                window.scrollTo({ top: 0, behavior: "smooth" });
+              }}
+              className={`flex items-center space-x-3.5 px-4 py-3 rounded-2xl transition ${
+                activeTab === "discover"
+                  ? "bg-[#711a31] text-white shadow-lg shadow-rose-950/40"
+                  : "text-stone-400 hover:text-white hover:bg-white/[0.05]"
+              }`}
+            >
+              <span className="text-xl">💘</span>
+              <span>Dating Radar</span>
+            </button>
+
+            {/* 4. Standouts */}
+            <button
+              onClick={() => setActiveTab("standouts")}
+              className={`flex items-center space-x-3.5 px-4 py-3 rounded-2xl transition ${
+                activeTab === "standouts"
+                  ? "bg-[#711a31] text-white shadow-lg shadow-rose-950/40"
+                  : "text-stone-400 hover:text-white hover:bg-white/[0.05]"
+              }`}
+            >
+              <span className="text-xl">⭐</span>
+              <span>Standouts</span>
+            </button>
+
+            {/* 5. Likes You */}
+            <button
+              onClick={() => setActiveTab("likes")}
+              className={`flex items-center justify-between px-4 py-3 rounded-2xl transition ${
+                activeTab === "likes"
+                  ? "bg-[#711a31] text-white shadow-lg shadow-rose-950/40"
+                  : "text-stone-400 hover:text-white hover:bg-white/[0.05]"
+              }`}
+            >
+              <div className="flex items-center space-x-3.5">
+                <span className="text-xl">♥</span>
+                <span>Likes You</span>
+              </div>
+              {likesYouList.length > 0 && (
+                <span className="bg-rose-500 text-white text-xs font-black px-2 py-0.5 rounded-full">
+                  {likesYouList.length}
+                </span>
+              )}
+            </button>
+
+            {/* 6. Matches & Chats */}
+            <button
+              onClick={() => setActiveTab("matches")}
+              className={`flex items-center justify-between px-4 py-3 rounded-2xl transition ${
+                activeTab === "matches"
+                  ? "bg-[#711a31] text-white shadow-lg shadow-rose-950/40"
+                  : "text-stone-400 hover:text-white hover:bg-white/[0.05]"
+              }`}
+            >
+              <div className="flex items-center space-x-3.5">
+                <span className="text-xl">💬</span>
+                <span>Messages</span>
+              </div>
+              {matchesList.some((m) => m.unread) && (
+                <span className="w-2.5 h-2.5 bg-rose-500 rounded-full animate-ping"></span>
+              )}
+            </button>
+
+            {/* 7. IRL Cafes */}
+            <button
+              onClick={() => setActiveTab("cafes")}
+              className={`flex items-center space-x-3.5 px-4 py-3 rounded-2xl transition ${
+                activeTab === "cafes"
+                  ? "bg-[#711a31] text-white shadow-lg shadow-rose-950/40"
+                  : "text-stone-400 hover:text-white hover:bg-white/[0.05]"
+              }`}
+            >
+              <span className="text-xl">☕</span>
+              <span>Partner Cafes</span>
+            </button>
+
+            {/* 8. Affiliate */}
+            <button
+              onClick={() => setActiveTab("affiliate")}
+              className={`flex items-center justify-between px-4 py-3 rounded-2xl transition ${
+                activeTab === "affiliate"
+                  ? "bg-amber-950/80 text-amber-300 border border-amber-500/40 shadow-lg"
+                  : "text-amber-400/80 hover:text-amber-300 hover:bg-amber-950/30"
+              }`}
+            >
+              <div className="flex items-center space-x-3.5">
+                <span className="text-xl">🪙</span>
+                <span>Affiliate (₹30)</span>
+              </div>
+              <span className="text-xs font-black text-amber-300 bg-amber-900/50 px-2 py-0.5 rounded-full border border-amber-500/30">
+                ₹{affiliateStats.affiliateBalance}
+              </span>
+            </button>
+
+            {/* 9. Profile */}
+            <button
+              onClick={() => setActiveTab("profile")}
+              className={`flex items-center space-x-3.5 px-4 py-3 rounded-2xl transition ${
+                activeTab === "profile"
+                  ? "bg-[#711a31] text-white shadow-lg shadow-rose-950/40"
+                  : "text-stone-400 hover:text-white hover:bg-white/[0.05]"
+              }`}
+            >
+              <span className="text-xl">👤</span>
+              <span>Profile Settings</span>
+            </button>
+          </nav>
+
+          {/* Post Creation Trigger Button */}
+          <button
+            onClick={() => setNewPostModalOpen(true)}
+            className="w-full bg-gradient-to-r from-[#711a31] via-rose-600 to-amber-600 hover:opacity-90 text-white font-bold py-3.5 px-4 rounded-2xl shadow-lg shadow-rose-950/50 flex items-center justify-center space-x-2 transition active:scale-95 text-sm"
+          >
+            <span className="text-base font-black">+</span>
+            <span>Create New Post</span>
+          </button>
+        </div>
+
+        {/* Current User Card at bottom of left sidebar */}
+        <div className="bg-white/[0.04] border border-white/[0.08] p-3 rounded-2xl flex items-center justify-between">
+          <div className="flex items-center space-x-2.5 overflow-hidden">
+            <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-[#711a31] to-rose-600 text-white flex items-center justify-center font-bold text-sm shrink-0 border border-white/20">
+              {(profileForm.displayName?.[0] || user?.email?.[0] || "U").toUpperCase()}
+            </div>
+            <div className="truncate">
+              <p className="text-xs font-bold text-white truncate">
+                {profileForm.displayName || user?.displayName || "You"}
+              </p>
+              <p className="text-[10px] text-stone-400 truncate">{user?.email}</p>
+            </div>
+          </div>
+          <div className="text-xs text-emerald-400" title="Lifetime Pass Active">
+            👑
+          </div>
+        </div>
+      </aside>
+
+      {/* =========================================================================
+          DESKTOP RIGHT SIDEBAR (Instagram Web "Suggested For You" & Partner Cafes)
+         ========================================================================= */}
+      <aside className="hidden xl:block fixed top-0 right-0 bottom-0 w-80 bg-[#0c0b12]/80 backdrop-blur-2xl border-l border-white/[0.08] p-5 overflow-y-auto z-30">
+        {/* User Mini Profile Header */}
+        <div className="flex items-center justify-between pb-4 border-b border-white/[0.08] mb-5">
+          <div className="flex items-center space-x-3">
+            <div className="w-11 h-11 rounded-full p-[2px] bg-gradient-to-tr from-[#f09433] via-[#dc2743] to-[#bc1888]">
+              <div className="w-full h-full rounded-full bg-stone-800 flex items-center justify-center text-sm font-bold text-white">
+                {(profileForm.displayName?.[0] || user?.email?.[0] || "U").toUpperCase()}
+              </div>
+            </div>
+            <div>
+              <p className="text-xs font-bold text-white">
+                {profileForm.displayName || user?.displayName || "You"}
+              </p>
+              <span className="text-[10px] text-stone-400">Verified Member</span>
+            </div>
+          </div>
+          <button
+            onClick={() => setActiveTab("profile")}
+            className="text-xs text-rose-400 hover:text-rose-300 font-bold transition"
+          >
+            Switch
+          </button>
+        </div>
+
+        {/* Suggested For You (Instagram Style Matching Screenshot 3) */}
+        <div className="mb-6">
+          <div className="flex justify-between items-center mb-3">
+            <span className="text-xs font-bold text-stone-400 uppercase tracking-wider">
+              Suggested for you
+            </span>
+            <button
+              onClick={() => setActiveTab("discover")}
+              className="text-[11px] font-bold text-white hover:text-rose-300 transition"
+            >
+              See All
+            </button>
+          </div>
+
+          <div className="space-y-3.5">
+            {[
+              {
+                name: "mr_mayurkoli_111k",
+                tag: "Suggested for you",
+                img: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=150&q=80",
+              },
+              {
+                name: "kalpesh_ppatil09",
+                tag: "Popular near you",
+                img: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=150&q=80",
+              },
+              {
+                name: "shubham_wagh",
+                tag: "New on Date-NearMe",
+                img: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80",
+              },
+              {
+                name: "aisha_art",
+                tag: "Shared interest in Art",
+                img: "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=150&q=80",
+              },
+            ].map((item) => (
+              <div key={item.name} className="flex items-center justify-between">
+                <div className="flex items-center space-x-2.5">
+                  <img
+                    src={item.img}
+                    alt={item.name}
+                    className="w-9 h-9 rounded-full object-cover border border-white/10"
+                  />
+                  <div className="leading-tight">
+                    <p className="text-xs font-bold text-white hover:underline cursor-pointer">
+                      {item.name}
+                    </p>
+                    <p className="text-[10px] text-stone-400">{item.tag}</p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => handleToggleFollow(item.name)}
+                  className={`text-xs font-bold transition px-2.5 py-1 rounded-lg ${
+                    followingMap[item.name]
+                      ? "bg-white/10 text-stone-300 hover:bg-white/20"
+                      : "text-rose-400 hover:text-white hover:bg-rose-950/60"
+                  }`}
+                >
+                  {followingMap[item.name] ? "Following" : "Follow"}
+                </button>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Partner Cafes Teaser */}
+        <div className="bg-gradient-to-br from-white/[0.04] to-rose-950/20 border border-white/[0.08] rounded-2xl p-4 mb-5">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-xs font-bold text-amber-300 flex items-center">
+              <span className="mr-1">☕</span> IRL Cafe Dating
+            </span>
+            <span className="text-[10px] font-black bg-rose-500/20 text-rose-300 px-2 py-0.5 rounded-full border border-rose-500/30">
+              10% OFF
+            </span>
+          </div>
+          <p className="text-[11px] text-stone-300 mb-3 leading-relaxed">
+            Safe public date meetups at our verified QR standee cafe partners.
+          </p>
+          <button
+            onClick={() => setActiveTab("cafes")}
+            className="w-full bg-white/10 hover:bg-white/20 text-white text-xs font-bold py-2 rounded-xl border border-white/10 transition"
+          >
+            Browse 12+ Cafes
+          </button>
+        </div>
+
+        {/* Women Safety Shield */}
+        <div className="p-3 bg-emerald-950/30 border border-emerald-500/20 rounded-2xl text-[11px] text-emerald-300 flex items-center space-x-2">
+          <span className="text-base">🛡️</span>
+          <span>Single-Slot Escrow Protection Active</span>
+        </div>
+      </aside>
+
+      {/* =========================================================================
+          MOBILE TOP GLASS HEADER (lg:hidden)
+         ========================================================================= */}
+      <header className="lg:hidden sticky top-0 w-full z-40 bg-black/75 backdrop-blur-2xl border-b border-white/[0.08] px-4 py-3 flex justify-between items-center shadow-lg">
         {/* Brand */}
         <div
           className="flex items-center space-x-2.5 cursor-pointer"
           onClick={() => {
-            setActiveTab("discover");
+            setActiveTab("feed");
             window.scrollTo({ top: 0, behavior: "smooth" });
           }}
         >
@@ -771,24 +1364,24 @@ const Radar = () => {
           </div>
           <div>
             <span className="font-serif text-xl font-black tracking-tight text-white">
-              Hinge
+              Date-NearMe
             </span>
             <span className="text-[10px] font-sans font-extrabold text-rose-400 ml-1.5 uppercase tracking-wider bg-rose-950/60 px-2 py-0.5 rounded-full border border-rose-500/30">
-              NearMe
+              Live
             </span>
           </div>
         </div>
 
         {/* Right Status Clusters */}
         <div className="flex items-center space-x-2">
-          {/* Lifetime Membership Active Pill */}
-          <div
-            className="bg-emerald-950/50 border border-emerald-500/30 text-emerald-300 px-3 py-1 rounded-full text-[11px] font-black flex items-center shadow-inner cursor-default"
-            title="Lifetime Access Active - Unlimited Chats Included"
+          {/* Create post trigger */}
+          <button
+            onClick={() => setNewPostModalOpen(true)}
+            className="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center text-lg font-bold border border-white/10"
+            title="Create Post"
           >
-            <span className="mr-1">👑</span>
-            <span>Lifetime Pass</span>
-          </div>
+            +
+          </button>
 
           {/* Affiliate Earnings Pill */}
           <button
@@ -814,54 +1407,399 @@ const Radar = () => {
       </header>
 
       {/* =========================================================================
-          TAB 1: DISCOVER (MAIN HINGE STREAM WITH GLASS CARDS & CULTURAL DEALBREAKERS)
+          MAIN CENTER STREAM CONTAINER (RESPONSIVE FULL SCREEN DESKTOP & MOBILE)
          ========================================================================= */}
-      {activeTab === "discover" && (
-        <div className="w-full max-w-lg flex flex-col items-center z-10">
-          {/* 24H VIBE STORIES REEL */}
-          <div className="w-full px-4 py-3 bg-white/[0.03] backdrop-blur-md border-b border-white/[0.08] overflow-x-auto scrollbar-hide flex items-center space-x-3.5">
-            <div
-              className="flex flex-col items-center cursor-pointer shrink-0"
-              onClick={() => fileInputRef.current?.click()}
-            >
-              <div className="w-13 h-13 rounded-full bg-white/[0.05] border-2 border-dashed border-rose-400/60 flex items-center justify-center relative hover:scale-105 transition">
-                <span className="text-xl text-rose-400 font-bold">+</span>
-                <div className="absolute -bottom-0.5 -right-0.5 bg-[#711a31] text-white w-4 h-4 rounded-full flex items-center justify-center text-[10px] font-bold border-2 border-[#0a090e]">
-                  +
+      <main className="w-full lg:pl-64 xl:pl-72 xl:pr-80 min-h-screen flex flex-col items-center pb-24 lg:pb-12">
+        {/* =========================================================================
+            TAB 0: FEED (INSTAGRAM SOCIAL PLATFORM WITH STORIES, POSTS & FOLLOWING)
+           ========================================================================= */}
+        {activeTab === "feed" && (
+          <div className="w-full max-w-2xl px-2 sm:px-4 pt-4 flex flex-col items-center z-10">
+            {/* Instagram Stories Tray matching Screenshot 3 */}
+            {renderStoriesTray()}
+
+            {/* Quick "Create Post" card */}
+            <div className="w-full bg-white/[0.04] backdrop-blur-2xl rounded-3xl p-4 border border-white/[0.08] shadow-xl mb-6">
+              <div className="flex items-center space-x-3">
+                <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-[#711a31] to-rose-600 text-white flex items-center justify-center font-bold text-sm shrink-0">
+                  {(profileForm.displayName?.[0] || user?.email?.[0] || "U").toUpperCase()}
                 </div>
+                <button
+                  onClick={() => setNewPostModalOpen(true)}
+                  className="flex-1 bg-white/[0.06] hover:bg-white/[0.1] text-stone-400 hover:text-stone-200 text-left px-4 py-2.5 rounded-full text-xs transition border border-white/[0.06]"
+                >
+                  Share a photo, vibe or date thought...
+                </button>
+                <button
+                  onClick={() => setNewPostModalOpen(true)}
+                  className="p-2.5 bg-[#711a31]/60 hover:bg-[#711a31] text-white rounded-full transition shadow-md"
+                  title="Create post"
+                >
+                  📷
+                </button>
               </div>
-              <span className="text-[11px] font-bold text-stone-400 mt-1">
-                My Story
+            </div>
+
+            {/* Post Feed List */}
+            <div className="w-full space-y-6">
+              {postsList.map((post) => (
+                <article
+                  key={post.id}
+                  className="w-full bg-black/60 backdrop-blur-2xl rounded-3xl overflow-hidden border border-white/[0.1] shadow-2xl transition hover:border-white/[0.16]"
+                >
+                  {/* Post Header */}
+                  <div className="flex items-center justify-between p-3.5 sm:p-4 border-b border-white/[0.06]">
+                    <div className="flex items-center space-x-3">
+                      <div className="w-10 h-10 rounded-full p-[2px] bg-gradient-to-tr from-[#f09433] via-[#dc2743] to-[#bc1888] shrink-0">
+                        <img
+                          src={post.userAvatar}
+                          alt={post.user}
+                          className="w-full h-full rounded-full object-cover border border-[#0a090e]"
+                        />
+                      </div>
+                      <div className="leading-tight">
+                        <div className="flex items-center space-x-1.5">
+                          <span className="font-bold text-sm text-white">{post.user}</span>
+                          {post.verified && (
+                            <span className="text-blue-400 text-xs" title="Verified Creator">
+                              ✓
+                            </span>
+                          )}
+                        </div>
+                        <span className="text-[11px] text-stone-400">{post.location}</span>
+                      </div>
+                    </div>
+
+                    {/* Follow / Following Button */}
+                    <button
+                      onClick={() => handleToggleFollow(post.user)}
+                      className={`text-xs font-bold px-3 py-1.5 rounded-xl transition ${
+                        followingMap[post.user]
+                          ? "bg-white/10 text-stone-300 hover:bg-white/20"
+                          : "bg-[#711a31] hover:bg-rose-700 text-white shadow-md shadow-rose-950/40"
+                      }`}
+                    >
+                      {followingMap[post.user] ? "Following" : "Follow"}
+                    </button>
+                  </div>
+
+                  {/* Post Image with Double Tap / Click Like Effect */}
+                  <div
+                    className="w-full h-[380px] sm:h-[480px] relative bg-stone-900 cursor-pointer overflow-hidden group select-none"
+                    onDoubleClick={() => handleLikePost(post.id)}
+                  >
+                    <img
+                      src={post.img}
+                      alt="Post media"
+                      className="w-full h-full object-cover group-hover:scale-[1.01] transition duration-500"
+                    />
+                    {post.liked && (
+                      <div className="absolute top-3 right-3 bg-black/60 backdrop-blur-md text-rose-500 px-2.5 py-1 rounded-full text-xs font-bold flex items-center space-x-1 border border-rose-500/30">
+                        <span>❤️</span>
+                        <span>Liked</span>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Post Action Buttons Bar */}
+                  <div className="p-3.5 sm:p-4">
+                    <div className="flex items-center justify-between mb-3">
+                      <div className="flex items-center space-x-4">
+                        {/* Like Button */}
+                        <button
+                          onClick={() => handleLikePost(post.id)}
+                          className={`flex items-center space-x-1.5 transition active:scale-125 ${
+                            post.liked ? "text-rose-500" : "text-stone-300 hover:text-white"
+                          }`}
+                        >
+                          <span className="text-2xl">{post.liked ? "❤️" : "🤍"}</span>
+                          <span className="text-xs font-bold text-white">
+                            {post.likes.toLocaleString()}
+                          </span>
+                        </button>
+
+                        {/* Comment Button */}
+                        <button
+                          onClick={() =>
+                            setActiveCommentPost(activeCommentPost === post.id ? null : post.id)
+                          }
+                          className="flex items-center space-x-1.5 text-stone-300 hover:text-white transition"
+                        >
+                          <span className="text-2xl">💬</span>
+                          <span className="text-xs font-bold text-white">
+                            {post.comments.length}
+                          </span>
+                        </button>
+
+                        {/* Share Button */}
+                        <button
+                          onClick={() => {
+                            navigator.clipboard.writeText(window.location.href);
+                            toast.success("Post link copied! Share on WhatsApp/IG ✈️");
+                          }}
+                          className="text-stone-300 hover:text-white text-2xl transition hover:rotate-12"
+                          title="Share Post"
+                        >
+                          ✈️
+                        </button>
+                      </div>
+
+                      {/* Bookmark */}
+                      <button
+                        onClick={() => toast.success("Saved to your Bookmarks! 🔖")}
+                        className="text-stone-300 hover:text-white text-xl transition"
+                        title="Save"
+                      >
+                        🔖
+                      </button>
+                    </div>
+
+                    {/* Likes count */}
+                    <p className="text-xs font-bold text-white mb-1.5">
+                      {post.likes.toLocaleString()} likes
+                    </p>
+
+                    {/* Caption */}
+                    <div className="text-xs sm:text-sm text-stone-200 leading-relaxed">
+                      <span className="font-bold text-white mr-2">{post.user}</span>
+                      <span>{post.caption}</span>
+                    </div>
+
+                    {/* Time Stamp */}
+                    <span className="text-[10px] text-stone-500 uppercase tracking-wider block mt-1">
+                      {post.time}
+                    </span>
+
+                    {/* Comments Toggle and Comments list */}
+                    {post.comments.length > 0 && (
+                      <div className="mt-3 pt-3 border-t border-white/[0.06] space-y-2">
+                        <div className="flex justify-between items-center">
+                          <span className="text-[11px] font-bold text-stone-400">
+                            Comments ({post.comments.length})
+                          </span>
+                          <button
+                            onClick={() =>
+                              setActiveCommentPost(activeCommentPost === post.id ? null : post.id)
+                            }
+                            className="text-[11px] text-rose-400 hover:underline"
+                          >
+                            {activeCommentPost === post.id ? "Hide" : "View all"}
+                          </button>
+                        </div>
+
+                        {/* Show recent comments or all comments when expanded */}
+                        {(activeCommentPost === post.id ? post.comments : post.comments.slice(-2)).map(
+                          (c, idx) => (
+                            <div key={idx} className="text-xs flex items-start space-x-2">
+                              <span className="font-bold text-white shrink-0">{c.user}</span>
+                              <span className="text-stone-300">{c.text}</span>
+                            </div>
+                          )
+                        )}
+                      </div>
+                    )}
+
+                    {/* Add Comment Input Bar */}
+                    <div className="mt-3 pt-3 border-t border-white/[0.06] flex items-center space-x-2">
+                      <input
+                        type="text"
+                        placeholder="Add a comment..."
+                        value={activeCommentPost === post.id ? commentInputText : ""}
+                        onFocus={() => setActiveCommentPost(post.id)}
+                        onChange={(e) => {
+                          setActiveCommentPost(post.id);
+                          setCommentInputText(e.target.value);
+                        }}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter") handleAddComment(post.id);
+                        }}
+                        className="flex-1 bg-white/[0.05] border border-white/[0.08] rounded-full px-3.5 py-2 text-xs text-white placeholder-stone-500 focus:outline-none focus:border-rose-400"
+                      />
+                      <button
+                        onClick={() => handleAddComment(post.id)}
+                        disabled={activeCommentPost !== post.id || !commentInputText.trim()}
+                        className="text-xs font-bold text-rose-400 disabled:text-stone-600 px-3 py-2 rounded-full hover:bg-rose-950/40 transition"
+                      >
+                        Post
+                      </button>
+                    </div>
+                  </div>
+                </article>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* =========================================================================
+            TAB 0.5: REELS (YOUTUBE SHORTS / INSTAGRAM REELS VERTICAL VIDEO STREAM)
+           ========================================================================= */}
+        {activeTab === "reels" && (
+          <div className="w-full max-w-xl px-2 sm:px-4 pt-4 flex flex-col items-center z-10">
+            {/* Header / Sub-tabs */}
+            <div className="w-full flex items-center justify-between mb-4 px-2">
+              <div className="flex items-center space-x-2">
+                <span className="text-xl">🎬</span>
+                <h2 className="text-xl font-bold font-serif text-white">Reels & Shorts</h2>
+              </div>
+              <span className="text-xs font-bold text-rose-400 bg-rose-950/60 px-3 py-1 rounded-full border border-rose-500/30">
+                🔥 Trending Now
               </span>
             </div>
 
-            <input
-              type="file"
-              ref={fileInputRef}
-              onChange={handleStoryUpload}
-              className="hidden"
-              accept="image/*,video/*"
-            />
+            {/* Reels Feed Stream */}
+            <div className="w-full space-y-8">
+              {reelsList.map((reel) => (
+                <div
+                  key={reel.id}
+                  className="w-full max-w-md mx-auto h-[620px] rounded-3xl relative overflow-hidden bg-stone-950 border border-white/[0.12] shadow-2xl flex flex-col justify-between"
+                >
+                  {/* Background Video / Animated Poster */}
+                  <div className="absolute inset-0 z-0">
+                    <img
+                      src={reel.videoPoster}
+                      alt={reel.creator}
+                      className="w-full h-full object-cover brightness-90"
+                    />
+                    {/* Gradient Overlays */}
+                    <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-transparent to-black/90 pointer-events-none"></div>
+                  </div>
 
-            {storyList.map((s) => (
-              <div
-                key={s.id}
-                onClick={() => setViewingStory(s)}
-                className="flex flex-col items-center cursor-pointer shrink-0 group"
-              >
-                <div className="w-13 h-13 rounded-full p-[2px] bg-gradient-to-tr from-[#711a31] via-rose-500 to-amber-500 group-hover:scale-105 transition shadow-sm">
-                  <img
-                    src={s.img}
-                    alt={s.user}
-                    className="w-full h-full rounded-full object-cover border-2 border-[#0a090e]"
-                  />
+                  {/* Top Bar inside Reel: Sound Toggle & Tags */}
+                  <div className="relative z-10 p-4 flex items-center justify-between">
+                    <span className="bg-black/60 backdrop-blur-md text-white text-[11px] font-bold px-3 py-1 rounded-full border border-white/20">
+                      Reels
+                    </span>
+                    <button
+                      onClick={() => setIsPlayingReel(!isPlayingReel)}
+                      className="w-9 h-9 rounded-full bg-black/60 backdrop-blur-md text-white flex items-center justify-center text-sm border border-white/20 shadow-md hover:scale-105 transition"
+                    >
+                      {isPlayingReel ? "🔊" : "🔇"}
+                    </button>
+                  </div>
+
+                  {/* Center Play/Pause indicator on click */}
+                  <div
+                    className="absolute inset-0 z-10 flex items-center justify-center cursor-pointer"
+                    onClick={() => setIsPlayingReel(!isPlayingReel)}
+                  >
+                    {!isPlayingReel && (
+                      <div className="w-16 h-16 rounded-full bg-black/70 backdrop-blur-md text-white flex items-center justify-center text-2xl border border-white/20">
+                        ▶
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Bottom & Right Action Bars inside Reel */}
+                  <div className="relative z-20 p-4 flex items-end justify-between">
+                    {/* Creator Info & Audio Ticker (Left) */}
+                    <div className="flex-1 pr-4">
+                      {/* Creator Handle + Follow */}
+                      <div className="flex items-center space-x-2.5 mb-2">
+                        <img
+                          src={reel.creatorAvatar}
+                          alt={reel.creator}
+                          className="w-9 h-9 rounded-full object-cover border-2 border-white/60"
+                        />
+                        <span className="font-bold text-sm text-white drop-shadow">
+                          @{reel.creator}
+                        </span>
+                        <button
+                          onClick={() => handleToggleFollow(reel.creator)}
+                          className={`text-xs font-bold px-3 py-1 rounded-full transition shadow-md ${
+                            followingMap[reel.creator]
+                              ? "bg-white/20 text-white backdrop-blur-md"
+                              : "bg-[#711a31] text-white hover:bg-rose-700"
+                          }`}
+                        >
+                          {followingMap[reel.creator] ? "Following" : "Follow"}
+                        </button>
+                      </div>
+
+                      {/* Caption */}
+                      <p className="text-xs text-white/90 font-medium mb-3 drop-shadow leading-relaxed line-clamp-2">
+                        {reel.caption}
+                      </p>
+
+                      {/* Music / Audio Ticker */}
+                      <div className="flex items-center space-x-2 bg-black/40 backdrop-blur-md px-3 py-1.5 rounded-full border border-white/10 w-fit max-w-[260px]">
+                        <span className="text-xs">🎵</span>
+                        <span className="text-[11px] text-white font-medium truncate">
+                          {reel.music}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Vertical Floating Interaction Buttons (Right) */}
+                    <div className="flex flex-col items-center space-y-4 shrink-0 pb-1">
+                      {/* Like */}
+                      <button
+                        onClick={() => handleLikeReel(reel.id)}
+                        className="flex flex-col items-center transition group active:scale-125"
+                      >
+                        <div
+                          className={`w-11 h-11 rounded-full backdrop-blur-md flex items-center justify-center text-xl shadow-lg border ${
+                            reel.liked
+                              ? "bg-rose-600/80 border-rose-400 text-white"
+                              : "bg-black/60 border-white/20 text-white group-hover:scale-110"
+                          }`}
+                        >
+                          {reel.liked ? "❤️" : "🤍"}
+                        </div>
+                        <span className="text-[10px] font-bold text-white mt-1 drop-shadow">
+                          {reel.likes.toLocaleString()}
+                        </span>
+                      </button>
+
+                      {/* Comment */}
+                      <button
+                        onClick={() =>
+                          toast("Comments opening for @" + reel.creator, { icon: "💬" })
+                        }
+                        className="flex flex-col items-center transition group"
+                      >
+                        <div className="w-11 h-11 rounded-full bg-black/60 backdrop-blur-md border border-white/20 text-white flex items-center justify-center text-xl shadow-lg group-hover:scale-110">
+                          💬
+                        </div>
+                        <span className="text-[10px] font-bold text-white mt-1 drop-shadow">
+                          {reel.comments}
+                        </span>
+                      </button>
+
+                      {/* Share */}
+                      <button
+                        onClick={() => {
+                          navigator.clipboard.writeText(window.location.href);
+                          toast.success("Reel link copied! Share with friends ✈️");
+                        }}
+                        className="flex flex-col items-center transition group"
+                      >
+                        <div className="w-11 h-11 rounded-full bg-black/60 backdrop-blur-md border border-white/20 text-white flex items-center justify-center text-lg shadow-lg group-hover:scale-110">
+                          ✈️
+                        </div>
+                        <span className="text-[10px] font-bold text-white mt-1 drop-shadow">
+                          Share
+                        </span>
+                      </button>
+
+                      {/* Spinning Vinyl Record Disc */}
+                      <div className="w-10 h-10 rounded-full bg-stone-900 border-2 border-stone-700 flex items-center justify-center animate-spin shadow-xl">
+                        <div className="w-3.5 h-3.5 rounded-full bg-[#711a31] border border-white"></div>
+                      </div>
+                    </div>
+                  </div>
                 </div>
-                <span className="text-[11px] font-semibold text-stone-300 mt-1 truncate w-14 text-center">
-                  {s.user}
-                </span>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
+        )}
+
+        {/* =========================================================================
+            TAB 1: DISCOVER (MAIN HINGE STREAM WITH GLASS CARDS & CULTURAL DEALBREAKERS)
+           ========================================================================= */}
+        {activeTab === "discover" && (
+          <div className="w-full max-w-2xl px-2 sm:px-4 pt-4 flex flex-col items-center z-10">
+            {/* Instagram-Style Stories Tray at top of Discover tab */}
+            {renderStoriesTray()}
 
           {/* GPS PERMISSION STRIP */}
           {!locationAllowed && (
@@ -923,7 +1861,7 @@ const Radar = () => {
           </div>
 
           {/* MAIN PROFILE CARD STREAM */}
-          <main className="w-full px-4 pt-3 flex flex-col space-y-4">
+          <div className="w-full px-4 pt-3 flex flex-col space-y-4">
             {/* 1. Profile Header & Vitals Glass Card */}
             <div className="bg-white/[0.05] backdrop-blur-2xl rounded-3xl p-5 border border-white/[0.12] shadow-xl">
               <div className="flex justify-between items-baseline mb-1">
@@ -1203,7 +2141,7 @@ const Radar = () => {
                 <span>Connect & Lock Anti-Ghosting Slot</span>
               </button>
             </div>
-          </main>
+          </div>
         </div>
       )}
 
@@ -1211,7 +2149,7 @@ const Radar = () => {
           TAB 2: STANDOUTS
          ========================================================================= */}
       {activeTab === "standouts" && (
-        <div className="w-full max-w-lg px-4 pt-4 flex flex-col space-y-4 z-10">
+        <div className="w-full max-w-4xl px-4 pt-4 flex flex-col space-y-4 z-10">
           <div className="bg-white/[0.05] backdrop-blur-2xl rounded-3xl p-5 border border-white/[0.12] shadow-xl">
             <div className="flex justify-between items-center mb-1">
               <h2 className="text-2xl font-serif font-black text-white">Standouts</h2>
@@ -1224,7 +2162,7 @@ const Radar = () => {
             </p>
           </div>
 
-          <div className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {initialStandouts.map((standout) => (
               <div
                 key={standout.id}
@@ -1262,7 +2200,7 @@ const Radar = () => {
           TAB 3: LIKES YOU
          ========================================================================= */}
       {activeTab === "likes" && (
-        <div className="w-full max-w-lg px-4 pt-4 flex flex-col space-y-4 z-10">
+        <div className="w-full max-w-2xl px-4 pt-4 flex flex-col space-y-4 z-10">
           <div className="bg-white/[0.05] backdrop-blur-2xl rounded-3xl p-5 border border-white/[0.12] shadow-xl">
             <h2 className="text-2xl font-serif font-black text-white">Likes You</h2>
             <p className="text-xs text-stone-400 font-medium mt-1">
@@ -1350,7 +2288,7 @@ const Radar = () => {
           TAB 4: MATCHES & CHAT (48H ANTI-GHOSTING TIMER & SAFE DATE CONCIERGE)
          ========================================================================= */}
       {activeTab === "matches" && (
-        <div className="w-full max-w-lg px-4 pt-4 flex flex-col space-y-4 z-10">
+        <div className="w-full max-w-3xl px-4 pt-4 flex flex-col space-y-4 z-10">
           <div className="bg-white/[0.05] backdrop-blur-2xl rounded-3xl p-5 border border-white/[0.12] shadow-xl">
             <h2 className="text-2xl font-serif font-black text-white">Conversations</h2>
             <p className="text-xs text-stone-400 font-medium mt-1">
@@ -1451,7 +2389,7 @@ const Radar = () => {
           TAB 5: CAFE PARTNERS (DATE-NEARME IRL & CAFE ONBOARDING)
          ========================================================================= */}
       {activeTab === "cafes" && (
-        <div className="w-full max-w-lg px-4 pt-4 flex flex-col space-y-4 z-10">
+        <div className="w-full max-w-4xl px-4 pt-4 flex flex-col space-y-4 z-10">
           <div className="bg-white/[0.05] backdrop-blur-2xl rounded-3xl p-5 border border-white/[0.12] shadow-xl">
             <div className="flex justify-between items-center mb-1">
               <h2 className="text-2xl font-serif font-black text-white">Date-NearMe IRL</h2>
@@ -1468,7 +2406,7 @@ const Radar = () => {
           </div>
 
           {/* Curated Cafes List */}
-          <div className="space-y-3.5">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {partnerCafes.map((cafe) => (
               <div
                 key={cafe.id}
@@ -1527,7 +2465,7 @@ const Radar = () => {
           TAB 6: AFFILIATE DASHBOARD (QR CODE STANDEE & 30% / ₹30 REWARDS)
          ========================================================================= */}
       {activeTab === "affiliate" && (
-        <div className="w-full max-w-lg px-4 pt-4 flex flex-col space-y-4 z-10">
+        <div className="w-full max-w-3xl px-4 pt-4 flex flex-col space-y-4 z-10">
           <div className="bg-white/[0.05] backdrop-blur-2xl rounded-3xl p-5 border border-white/[0.12] shadow-xl">
             <h2 className="text-2xl font-serif font-black text-white">Affiliate Partner Hub</h2>
             <p className="text-xs text-stone-400 font-medium mt-1">
@@ -1636,7 +2574,7 @@ const Radar = () => {
           TAB 7: PROFILE & TRUST SHIELD (MOBILE NUMBER, VERIFICATION & LOGOUT)
          ========================================================================= */}
       {activeTab === "profile" && (
-        <div className="w-full max-w-lg px-4 pt-4 flex flex-col space-y-4 z-10">
+        <div className="w-full max-w-2xl px-4 pt-4 flex flex-col space-y-4 z-10">
           {/* Profile Header */}
           <div className="bg-white/[0.05] backdrop-blur-2xl rounded-3xl p-6 border border-white/[0.12] shadow-xl text-center flex flex-col items-center">
             <div className="w-20 h-20 rounded-full bg-gradient-to-tr from-[#711a31] to-amber-500 text-white flex items-center justify-center text-3xl font-serif font-black shadow-lg border-2 border-white/30 mb-3">
@@ -1829,6 +2767,7 @@ const Radar = () => {
           </button>
         </div>
       )}
+      </main>
 
       {/* =========================================================================
           MODAL: SELFIE LIVENESS VERIFICATION (TRACK 1)
@@ -2205,10 +3144,101 @@ const Radar = () => {
       )}
 
       {/* =========================================================================
-          FLOATING GLASS NAVIGATION BAR (100% RESPONSIVE)
+          MODAL: CREATE NEW POST (Instagram Style)
          ========================================================================= */}
-      <nav className="fixed bottom-0 w-full max-w-lg z-40 bg-black/75 backdrop-blur-2xl border-t border-white/[0.08] px-3 py-2 flex justify-between items-center shadow-2xl">
-        {/* Tab 1: Discover */}
+      {newPostModalOpen && (
+        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-xl flex items-center justify-center p-4">
+          <div className="bg-[#121118] border border-white/[0.15] rounded-3xl max-w-md w-full p-6 shadow-2xl relative">
+            <button
+              onClick={() => setNewPostModalOpen(false)}
+              className="absolute top-4 right-4 text-stone-400 hover:text-white text-xl font-bold"
+            >
+              ✕
+            </button>
+
+            <div className="flex items-center space-x-2.5 mb-5">
+              <span className="text-2xl">📸</span>
+              <h3 className="text-xl font-bold font-serif text-white">Create New Post</h3>
+            </div>
+
+            <form onSubmit={handleCreatePost} className="space-y-4">
+              <div>
+                <label className="text-xs font-bold text-stone-300 block mb-1.5">
+                  Photo URL (or Unsplash link)
+                </label>
+                <input
+                  type="url"
+                  placeholder="https://images.unsplash.com/..."
+                  value={newPostImg}
+                  onChange={(e) => setNewPostImg(e.target.value)}
+                  className="w-full bg-white/[0.05] border border-white/[0.1] rounded-2xl px-4 py-3 text-xs text-white placeholder-stone-500 focus:outline-none focus:border-rose-400"
+                />
+              </div>
+
+              {newPostImg && (
+                <div className="w-full h-44 rounded-2xl overflow-hidden bg-stone-900 border border-white/10">
+                  <img src={newPostImg} alt="Preview" className="w-full h-full object-cover" />
+                </div>
+              )}
+
+              <div>
+                <label className="text-xs font-bold text-stone-300 block mb-1.5">
+                  Caption & Tags
+                </label>
+                <textarea
+                  rows={3}
+                  placeholder="Write a caption... #weekendvibes #mumbai #dating"
+                  value={newPostCaption}
+                  onChange={(e) => setNewPostCaption(e.target.value)}
+                  className="w-full bg-white/[0.05] border border-white/[0.1] rounded-2xl px-4 py-3 text-xs text-white placeholder-stone-500 focus:outline-none focus:border-rose-400 resize-none"
+                />
+              </div>
+
+              <button
+                type="submit"
+                className="w-full bg-gradient-to-r from-[#711a31] via-rose-600 to-amber-600 hover:opacity-90 text-white font-bold py-3.5 rounded-2xl shadow-lg transition active:scale-95 text-xs flex items-center justify-center space-x-2"
+              >
+                <span>Share to Date-NearMe Feed</span>
+                <span>🚀</span>
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* =========================================================================
+          FLOATING MOBILE NAVIGATION BAR (100% RESPONSIVE - lg:hidden)
+         ========================================================================= */}
+      <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-black/85 backdrop-blur-2xl border-t border-white/[0.08] px-2 py-2 flex justify-around items-center shadow-2xl">
+        {/* Tab 1: Feed (Instagram Social) */}
+        <button
+          onClick={() => {
+            setActiveTab("feed");
+            window.scrollTo({ top: 0, behavior: "smooth" });
+          }}
+          className={`flex flex-col items-center transition ${
+            activeTab === "feed" ? "text-rose-400 scale-105" : "text-stone-500 hover:text-stone-300"
+          }`}
+        >
+          <span className="text-xl leading-none">📱</span>
+          <span className="text-[9px] font-bold mt-1">Feed</span>
+        </button>
+
+        {/* Tab 2: Reels (YouTube / IG) */}
+        <button
+          onClick={() => {
+            setActiveTab("reels");
+            window.scrollTo({ top: 0, behavior: "smooth" });
+          }}
+          className={`flex flex-col items-center transition ${
+            activeTab === "reels" ? "text-rose-400 scale-105" : "text-stone-500 hover:text-stone-300"
+          }`}
+        >
+          <span className="text-xl leading-none">🎬</span>
+          <span className="text-[9px] font-bold mt-1">Reels</span>
+        </button>
+
+        {/* Tab 3: Discover (Hinge Dating) */}
         <button
           onClick={() => {
             setActiveTab("discover");
@@ -2219,10 +3249,10 @@ const Radar = () => {
           }`}
         >
           <span className="text-2xl font-serif font-black leading-none">H</span>
-          <span className="text-[9px] font-bold mt-1">Discover</span>
+          <span className="text-[9px] font-bold mt-1">Dating</span>
         </button>
 
-        {/* Tab 2: Standouts */}
+        {/* Tab 4: Standouts */}
         <button
           onClick={() => setActiveTab("standouts")}
           className={`flex flex-col items-center transition ${
@@ -2233,23 +3263,7 @@ const Radar = () => {
           <span className="text-[9px] font-bold mt-1">Standouts</span>
         </button>
 
-        {/* Tab 3: Likes You */}
-        <button
-          onClick={() => setActiveTab("likes")}
-          className={`flex flex-col items-center transition relative ${
-            activeTab === "likes" ? "text-rose-400 scale-105" : "text-stone-500 hover:text-stone-300"
-          }`}
-        >
-          <span className="text-xl leading-none">♥</span>
-          {likesYouList.length > 0 && (
-            <span className="absolute -top-1 right-2 bg-rose-500 text-white text-[9px] font-black w-4 h-4 rounded-full flex items-center justify-center">
-              {likesYouList.length}
-            </span>
-          )}
-          <span className="text-[9px] font-bold mt-1">Likes You</span>
-        </button>
-
-        {/* Tab 4: Matches */}
+        {/* Tab 5: Matches */}
         <button
           onClick={() => setActiveTab("matches")}
           className={`flex flex-col items-center transition relative ${
@@ -2258,12 +3272,12 @@ const Radar = () => {
         >
           <span className="text-xl leading-none">💬</span>
           {matchesList.some((m) => m.unread) && (
-            <span className="absolute top-0 right-3 w-2 h-2 bg-rose-500 rounded-full animate-ping"></span>
+            <span className="absolute top-0 right-2 w-2 h-2 bg-rose-500 rounded-full animate-ping"></span>
           )}
-          <span className="text-[9px] font-bold mt-1">Matches</span>
+          <span className="text-[9px] font-bold mt-1">Chats</span>
         </button>
 
-        {/* Tab 5: Cafes */}
+        {/* Tab 6: Cafes */}
         <button
           onClick={() => setActiveTab("cafes")}
           className={`flex flex-col items-center transition ${
@@ -2271,10 +3285,10 @@ const Radar = () => {
           }`}
         >
           <span className="text-xl leading-none">☕</span>
-          <span className="text-[9px] font-bold mt-1">IRL Cafes</span>
+          <span className="text-[9px] font-bold mt-1">Cafes</span>
         </button>
 
-        {/* Tab 6: Affiliate */}
+        {/* Tab 7: Affiliate */}
         <button
           onClick={() => setActiveTab("affiliate")}
           className={`flex flex-col items-center transition ${
@@ -2285,7 +3299,7 @@ const Radar = () => {
           <span className="text-[9px] font-bold mt-1">Affiliate</span>
         </button>
 
-        {/* Tab 7: Profile */}
+        {/* Tab 8: Profile */}
         <button
           onClick={() => setActiveTab("profile")}
           className={`flex flex-col items-center transition ${
