@@ -10,7 +10,9 @@ const nextConfig = {
     ],
   },
   async rewrites() {
-    const backendUrl = process.env.NEXT_PUBLIC_API_URL?.replace(/\/api\/?$/, '') || 'http://localhost:5000';
+    const backendUrl =
+      process.env.NEXT_PUBLIC_API_URL?.replace(/\/api\/?$/, '') ||
+      'https://date-near-me-android-app-backend.vercel.app';
     return [
       {
         source: '/api/:path*',

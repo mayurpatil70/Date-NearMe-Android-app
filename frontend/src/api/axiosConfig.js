@@ -1,15 +1,27 @@
 import axios from "axios";
 
-// Dynamically use Vercel production URL or localhost fallback
-const rawBaseURL =
-  process.env.NEXT_PUBLIC_API_URL ||
-  process.env.REACT_APP_API_URL ||
-  "http://localhost:5000";
+// Dynamically use Vercel production URL, env variable, or localhost fallback
+const getBaseURL = () => {
+  if (process.env.NEXT_PUBLIC_API_URL) {
+    const url = process.env.NEXT_PUBLIC_API_URL;
+    return url.endsWith("/api") ? url : `${url.replace(/\/$/, "")}/api`;
+  }
+  if (process.env.REACT_APP_API_URL) {
+    const url = process.env.REACT_APP_API_URL;
+    return url.endsWith("/api") ? url : `${url.replace(/\/$/, "")}/api`;
+  }
+  if (
+    typeof window !== "undefined" &&
+    window.location.hostname !== "localhost" &&
+    window.location.hostname !== "127.0.0.1"
+  ) {
+    // In production (Vercel), point directly to the live backend
+    return "https://date-near-me-android-app-backend.vercel.app/api";
+  }
+  return "http://localhost:5000/api";
+};
 
-// Ensure baseURL points to /api without double slashes
-const baseURL = rawBaseURL.endsWith("/api")
-  ? rawBaseURL
-  : `${rawBaseURL.replace(/\/$/, "")}/api`;
+const baseURL = getBaseURL();
 
 const api = axios.create({
   baseURL,

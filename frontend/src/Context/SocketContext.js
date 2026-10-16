@@ -14,12 +14,22 @@ export const SocketProvider = ({ children }) => {
     if (typeof window === "undefined") return;
 
     if (user) {
-      const rawUrl =
-        process.env.NEXT_PUBLIC_SOCKET_URL ||
-        process.env.REACT_APP_SOCKET_URL ||
-        process.env.NEXT_PUBLIC_API_URL?.replace(/\/api\/?$/, "") ||
-        process.env.REACT_APP_API_URL?.replace(/\/api\/?$/, "") ||
-        "http://localhost:5000";
+      const getSocketUrl = () => {
+        if (process.env.NEXT_PUBLIC_SOCKET_URL) return process.env.NEXT_PUBLIC_SOCKET_URL;
+        if (process.env.REACT_APP_SOCKET_URL) return process.env.REACT_APP_SOCKET_URL;
+        if (process.env.NEXT_PUBLIC_API_URL) return process.env.NEXT_PUBLIC_API_URL.replace(/\/api\/?$/, "");
+        if (process.env.REACT_APP_API_URL) return process.env.REACT_APP_API_URL.replace(/\/api\/?$/, "");
+        if (
+          typeof window !== "undefined" &&
+          window.location.hostname !== "localhost" &&
+          window.location.hostname !== "127.0.0.1"
+        ) {
+          return "https://date-near-me-android-app-backend.vercel.app";
+        }
+        return "http://localhost:5000";
+      };
+
+      const rawUrl = getSocketUrl();
 
       // Connect to the backend
       const newSocket = io(rawUrl, {
