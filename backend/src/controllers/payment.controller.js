@@ -1,19 +1,15 @@
-const Razorpay = require("razorpay");
+const razorpayInstance = require("../config/razorpay");
 const crypto = require("crypto");
 const User = require("../models/user");
 
-const razorpayInstance = new Razorpay({
-  key_id: process.env.RAZORPAY_KEY_ID,
-  key_secret: process.env.RAZORPAY_KEY_SECRET,
-});
 
 exports.createOrder = async (req, res) => {
   try {
-    const { amount, type } = req.body; // type can be 'registration' (9 INR) or 'recharge' (50 INR)
+    const { amount = 199, type = "registration" } = req.body; // Default 199 INR lifetime membership
 
     // Razorpay expects the amount in paise (multiply INR by 100)
     const options = {
-      amount: amount * 100,
+      amount: Math.round(Number(amount) * 100),
       currency: "INR",
       receipt: `receipt_order_${Math.floor(Math.random() * 1000)}`,
     };
@@ -37,8 +33,9 @@ exports.verifyPayment = async (req, res) => {
       razorpay_order_id,
       razorpay_payment_id,
       razorpay_signature,
-      type,
+      type = "registration",
       userId,
+      referredBy,
     } = req.body;
 
     const body = razorpay_order_id + "|" + razorpay_payment_id;
@@ -56,11 +53,27 @@ exports.verifyPayment = async (req, res) => {
         .json({ success: false, message: "Invalid payment signature" });
     }
 
-    // Handle PostgreSQL database updates based on the payment type
+    // Handle PostgreSQL database updates
     if (type === "registration") {
       await User.updateLifetimeAccess(userId, true);
-    } else if (type === "recharge") {
-      await User.addWalletBalance(userId, 50);
+
+      // Record transaction
+      try {
+        const { pool } = require("../config/db");
+        await pool.query(
+          `INSERT INTO transactions (user_id, razorpay_order_id, razorpay_payment_id, amount, coins_granted, status)
+           VALUES ($1, $2, $3, $4, $5, 'success')
+           ON CONFLICT (razorpay_order_id) DO NOTHING`,
+          [userId, razorpay_order_id, razorpay_payment_id, 199, 1000]
+        );
+
+        // If user was referred by affiliate, process reward
+        if (referredBy) {
+          await User.processAffiliateReward(referredBy, userId, null, 30);
+        }
+      } catch (txErr) {
+        console.error("Transaction logging non-blocking error:", txErr.message);
+      }
     }
 
     res
