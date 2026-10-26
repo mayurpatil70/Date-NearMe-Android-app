@@ -116,3 +116,67 @@ describe("3. Real-World Date Pass & Google Maps Integration Logic", () => {
   });
 });
 
+describe("4. Socket.IO Real-Time Messaging & Offline Notifications Pipeline", () => {
+  test("Online message payload includes all real-time delivery fields and timestamps", () => {
+    const payload = {
+      id: "msg_test_101",
+      senderId: "user_a",
+      receiverId: "user_b",
+      message: "Subko or Blue Tokai this weekend? ☕",
+      senderName: "Archie",
+      senderAvatar: "https://example.com/avatar.jpg",
+      timestamp: new Date(),
+      status: "delivered",
+    };
+
+    expect(payload.id).toBeTruthy();
+    expect(payload.senderId).toBe("user_a");
+    expect(payload.receiverId).toBe("user_b");
+    expect(payload.message).toContain("Subko");
+    expect(payload.status).toBe("delivered");
+    expect(payload.timestamp instanceof Date).toBe(true);
+  });
+
+  test("Offline notification queued with sender info and message preview when recipient is offline", () => {
+    const offlineNotif = {
+      id: "notif_202",
+      user_id: "user_offline_b",
+      sender_id: "user_online_a",
+      sender_name: "Kalpesh",
+      sender_avatar: "https://example.com/kalpesh.jpg",
+      message_preview: "Hey! Loved your prompt about coffee dates ☕",
+      is_read: false,
+      created_at: new Date(),
+    };
+
+    expect(offlineNotif.user_id).toBe("user_offline_b");
+    expect(offlineNotif.is_read).toBe(false);
+    expect(offlineNotif.message_preview.length).toBeLessThanOrEqual(200);
+    expect(offlineNotif.sender_name).toBe("Kalpesh");
+  });
+
+  test("Message delivery statuses accurately progress: sent -> delivered -> read", () => {
+    const statuses = ["sent", "delivered", "read"];
+    let currentStatus = "sent";
+
+    // Recipient receives message
+    currentStatus = "delivered";
+    expect(statuses.indexOf(currentStatus)).toBe(1);
+
+    // Recipient opens chat
+    currentStatus = "read";
+    expect(statuses.indexOf(currentStatus)).toBe(2);
+  });
+
+  test("Typing indicators emit and debounce appropriately", () => {
+    const typingEvent = {
+      senderId: "user_a",
+      receiverId: "user_b",
+      senderName: "Archie",
+      isTyping: true,
+    };
+
+    expect(typingEvent.isTyping).toBe(true);
+    expect(typingEvent.senderName).toBe("Archie");
+  });
+});

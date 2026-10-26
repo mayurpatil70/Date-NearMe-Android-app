@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import LiveDatingMap from "./LiveDatingMap";
 import toast from "react-hot-toast";
 import { AuthContext } from "../../Context/AuthContext";
+import { SocketContext } from "../../Context/SocketContext";
 import api from "../../api/axiosConfig";
 import HingeNavBar from "../../../components/HingeNavBar";
 import HingeLikesYouEmpty from "../../../components/HingeLikesYouEmpty";
@@ -436,6 +437,7 @@ const initialMatches = [
 const Radar = ({ initialTab = "discover" }) => {
   const router = useRouter();
   const { user, updateUserProfile, logout } = useContext(AuthContext);
+  const socketContext = useContext(SocketContext);
 
   // Tabs: 'discover' | 'map' | 'likes' | 'matches' | 'profile' | 'feed' | 'reels' | 'cafes' | 'affiliate'
   const [activeTab, setActiveTab] = useState(initialTab === "standouts" ? "likes" : initialTab);
@@ -3930,7 +3932,7 @@ const Radar = ({ initialTab = "discover" }) => {
           window.scrollTo({ top: 0, behavior: "smooth" });
         }}
         matchesCount={matchesList.length}
-        unreadCount={matchesList.filter((m) => m.unread).length}
+        unreadCount={(socketContext?.unreadCount || 0) + matchesList.filter((m) => m.unread).length}
         likesCount={likesYouList.length}
         userAvatar={profileForm.avatar || user?.avatar}
       />

@@ -1,11 +1,12 @@
 "use client";
 
-import React, { useState, useEffect, useContext } from "react";
+import React, { useState, useEffect, useRef, useContext } from "react";
 import { useParams, useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 import { AuthContext } from "../../Context/AuthContext";
 import { SocketContext } from "../../Context/SocketContext";
 import api from "../../api/axiosConfig";
+import { Check, CheckCheck, Clock, ShieldCheck, Sparkles, MapPin, Coffee, Handshake } from "lucide-react";
 
 const KNOWN_MATCH_PROFILES = {
   like_1: {
@@ -46,7 +47,10 @@ const ChatRoom = () => {
   const params = useParams();
   const targetUserId = params?.id || params?.targetUserId || "like_1";
   const { user, updateWallet } = useContext(AuthContext);
-  const socket = useContext(SocketContext);
+  const socketContext = useContext(SocketContext);
+  const socket = socketContext?.socket !== undefined ? socketContext.socket : socketContext;
+  const markChatAsRead = socketContext?.markChatAsRead;
+  const onlineUsers = socketContext?.onlineUsers || new Set();
   const router = useRouter();
 
   const currentMatch = KNOWN_MATCH_PROFILES[targetUserId] || {
@@ -56,21 +60,57 @@ const ChatRoom = () => {
     initialMsg: "Hey! Let's plan a date at our partner cafe with 15% off!",
   };
 
+  const isTargetOnline = onlineUsers.has(targetUserId);
+
   const [messages, setMessages] = useState([
     {
+      id: "initial_msg",
       senderId: targetUserId,
       message: currentMatch.initialMsg,
       timestamp: new Date(Date.now() - 1000 * 60 * 15),
       isMine: false,
+      status: "read",
     },
   ]);
   const [currentMessage, setCurrentMessage] = useState("");
+  const [isPeerTyping, setIsPeerTyping] = useState(false);
   const [timeLeft, setTimeLeft] = useState(24 * 3600 - 180); // 23h 57m
   const [escrowStatus, setEscrowStatus] = useState("LOCKED_ESCROW"); // LOCKED_ESCROW, ACTIVE, MUTUAL_CLOSE, FORFEIT
   const [showDatePassModal, setShowDatePassModal] = useState(false);
   const [qrToken, setQrToken] = useState("");
   const [venueCheckedIn, setVenueCheckedIn] = useState(false);
   const [wingmanLoading, setWingmanLoading] = useState(false);
+
+  const messagesEndRef = useRef(null);
+  const typingTimeoutRef = useRef(null);
+
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages, isPeerTyping]);
+
+  // Load message history from REST API fallback & mark as read
+  useEffect(() => {
+    if (markChatAsRead) {
+      markChatAsRead(targetUserId);
+    }
+
+    async function loadHistory() {
+      try {
+        const res = await api.get(`/chat/messages/${targetUserId}`);
+        if (res.data?.messages && res.data.messages.length > 0) {
+          setMessages(res.data.messages);
+        }
+      } catch (err) {
+        // Fallback to local state if REST endpoint not accessible
+      }
+    }
+
+    loadHistory();
+  }, [targetUserId, markChatAsRead]);
 
   // Escrow Countdown Timer
   useEffect(() => {
@@ -100,51 +140,176 @@ const ChatRoom = () => {
       .padStart(2, "0")}:${s.toString().padStart(2, "0")}`;
   };
 
+  // Socket.IO Event Handlers
   useEffect(() => {
     if (!socket) return;
 
+    // Real-time incoming message
     const handleReceiveMessage = (data) => {
       if (data.senderId === targetUserId) {
-        setMessages((prev) => [...prev, { ...data, isMine: false }]);
+        setMessages((prev) => [
+          ...prev,
+          {
+            ...data,
+            isMine: false,
+            status: "delivered",
+          },
+        ]);
+
+        // Tell sender we read their message
+        socket.emit("mark_messages_read", {
+          userId: user?.id || user?._id,
+          senderId: targetUserId,
+        });
       }
     };
 
-    const handleChatError = (errorData) => {
-      toast.error(errorData?.message || "Chat notification received");
+    // Double tick confirmation (peer received message)
+    const handleMessageDelivered = ({ id }) => {
+      setMessages((prev) =>
+        prev.map((m) => (m.id === id ? { ...m, status: "delivered" } : m))
+      );
+    };
+
+    // Blue tick confirmation (peer opened chat)
+    const handleMessagesReadByPeer = ({ readBy }) => {
+      if (readBy === targetUserId) {
+        setMessages((prev) => prev.map((m) => (m.isMine ? { ...m, status: "read" } : m)));
+      }
+    };
+
+    // Typing status
+    const handleUserTyping = ({ senderId, isTyping }) => {
+      if (senderId === targetUserId) {
+        setIsPeerTyping(isTyping);
+      }
     };
 
     socket.on("receive_message", handleReceiveMessage);
-    socket.on("chat_error", handleChatError);
+    socket.on("message_delivered", handleMessageDelivered);
+    socket.on("messages_read_by_peer", handleMessagesReadByPeer);
+    socket.on("user_typing", handleUserTyping);
 
     return () => {
       socket.off("receive_message", handleReceiveMessage);
-      socket.off("chat_error", handleChatError);
+      socket.off("message_delivered", handleMessageDelivered);
+      socket.off("messages_read_by_peer", handleMessagesReadByPeer);
+      socket.off("user_typing", handleUserTyping);
     };
-  }, [socket, targetUserId, router]);
+  }, [socket, targetUserId, user]);
 
-  const sendMessage = (e) => {
+  // Handle typing debounce
+  const handleInputChange = (e) => {
+    setCurrentMessage(e.target.value);
+
+    if (socket) {
+      const senderId = user?.id || user?._id || "me";
+      socket.emit("typing_start", {
+        senderId,
+        receiverId: targetUserId,
+        senderName: user?.displayName || "You",
+      });
+
+      if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
+      typingTimeoutRef.current = setTimeout(() => {
+        socket.emit("typing_stop", {
+          senderId,
+          receiverId: targetUserId,
+        });
+      }, 1500);
+    }
+  };
+
+  // Send Message with Socket.IO + REST Fallback
+  const sendMessage = async (e) => {
     e.preventDefault();
     if (!currentMessage.trim()) return;
 
     const senderId = user?.id || user?._id || "me";
+    const text = currentMessage.trim();
+    const tempId = `temp_${Date.now()}`;
 
     const newMsg = {
+      id: tempId,
       senderId,
-      message: currentMessage,
+      receiverId: targetUserId,
+      message: text,
       timestamp: new Date(),
       isMine: true,
+      status: "sent",
     };
-    setMessages((prev) => [...prev, newMsg]);
 
+    setMessages((prev) => [...prev, newMsg]);
+    setCurrentMessage("");
+
+    // Stop typing immediately
     if (socket) {
-      socket.emit("send_message", {
-        senderId,
-        receiverId: targetUserId,
-        message: currentMessage,
-      });
+      socket.emit("typing_stop", { senderId, receiverId: targetUserId });
     }
 
-    setCurrentMessage("");
+    let socketSuccess = false;
+
+    // 1. Primary: Socket.IO with Acknowledgment
+    if (socket && socket.connected) {
+      try {
+        socket.emit(
+          "send_message",
+          {
+            senderId,
+            receiverId: targetUserId,
+            message: text,
+            senderName: user?.displayName || "A Match",
+            senderAvatar: user?.avatar || "",
+            sessionId: targetUserId,
+          },
+          (ack) => {
+            if (ack && ack.status === "success") {
+              setMessages((prev) =>
+                prev.map((m) =>
+                  m.id === tempId
+                    ? {
+                        ...m,
+                        id: ack.id || m.id,
+                        status: ack.delivered ? "delivered" : "sent",
+                      }
+                    : m
+                )
+              );
+
+              if (ack.offlineQueued) {
+                toast(
+                  `${currentMatch.name} is currently offline. Your message is safely queued as an offline alert! 📬`,
+                  { icon: "ℹ️", duration: 3500 }
+                );
+              }
+            }
+          }
+        );
+        socketSuccess = true;
+      } catch (err) {
+        socketSuccess = false;
+      }
+    }
+
+    // 2. Fallback: REST API if socket is offline or cold
+    if (!socketSuccess) {
+      try {
+        const { data } = await api.post("/chat/send-message", {
+          receiverId: targetUserId,
+          message: text,
+          senderName: user?.displayName || "A Match",
+          senderAvatar: user?.avatar || "",
+          sessionId: targetUserId,
+        });
+        if (data?.data) {
+          setMessages((prev) =>
+            prev.map((m) => (m.id === tempId ? { ...m, id: data.data.id } : m))
+          );
+        }
+      } catch (apiErr) {
+        // Message remains optimistically shown in chat
+      }
+    }
   };
 
   // AI WINGMAN TELEMETRY SPARK
@@ -158,7 +323,6 @@ const ChatRoom = () => {
         res.data?.suggestion ||
         "Icebreaker: If you could teleport to any city tonight for dinner, where are we heading?";
 
-      // Inject ephemeral wingman bubble
       setMessages((prev) => [
         ...prev,
         {
@@ -170,7 +334,6 @@ const ChatRoom = () => {
       toast.success("AI Wingman Spark injected!", { icon: "✨" });
     } catch (err) {
       toast.dismiss(toastId);
-      // Fallback curated spark
       const sparks = [
         "What's your absolute go-to comfort food after a chaotic day?",
         "Would you rather only travel to mountains or beaches for the rest of your life?",
@@ -194,25 +357,24 @@ const ChatRoom = () => {
   // MUTUAL POLITE CLOSE & TOKEN REFUND
   const handleMutualClose = async () => {
     const confirmClose = window.confirm(
-      "Mutual Polite Close: Both parties will be thanked, escrow tokens will be 100% REFUNDED, and your single-slot will reopen. Proceed?",
+      "Mutual Polite Close: Both parties will be thanked, escrow tokens will be 100% REFUNDED, and your single-slot will reopen. Proceed?"
     );
     if (!confirmClose) return;
 
     try {
-      await api.post("/chat/close-session", {
+      await api.post("/chat/close", {
         sessionId: targetUserId,
-        reason: "MUTUAL_CLOSE",
+        resolution: "POLITE_CLOSE",
       });
     } catch (e) {
       // Graceful offline refund
     }
 
-    // Refund escrow tokens
     updateWallet((user?.walletBalance || 0) + 1);
     setEscrowStatus("MUTUAL_CLOSE");
     toast.success(
       "Mutual closure complete! 1 Escrow Token refunded. Slot reopened.",
-      { duration: 4000, icon: "🤝" },
+      { duration: 4000, icon: "🤝" }
     );
     setTimeout(() => router.push("/radar"), 2000);
   };
@@ -227,13 +389,13 @@ const ChatRoom = () => {
       });
       setQrToken(
         data.qrToken ||
-          `VENUE-blue_tokai_bandra-USER-${user?.id || "admin"}-SEC-${Date.now()}`,
+          `VENUE-blue_tokai_bandra-USER-${user?.id || "admin"}-SEC-${Date.now()}`
       );
       setShowDatePassModal(true);
       toast.dismiss(toastId);
     } catch (err) {
       setQrToken(
-        `VENUE-blue_tokai_bandra-USER-${user?.id || "admin"}-SEC-${Date.now()}`,
+        `VENUE-blue_tokai_bandra-USER-${user?.id || "admin"}-SEC-${Date.now()}`
       );
       setShowDatePassModal(true);
       toast.dismiss(toastId);
@@ -252,21 +414,21 @@ const ChatRoom = () => {
       toast.dismiss(toastId);
       toast.success(
         "🎉 Real-World Date Verified! +10 Trust Score conferred to your profile!",
-        { duration: 5000 },
+        { duration: 5000 }
       );
     } catch (err) {
       setVenueCheckedIn(true);
       toast.dismiss(toastId);
       toast.success(
         "🎉 Real-World Date Verified! +10 Trust Score conferred to your profile!",
-        { duration: 5000 },
+        { duration: 5000 }
       );
     }
   };
 
   return (
     <div className="min-h-screen w-full bg-[#FAF8F5] flex flex-col items-center justify-between font-sans text-stone-900">
-      {/* CHAT CONTAINER (Max width for responsive mobile and desktop) */}
+      {/* CHAT CONTAINER */}
       <div className="w-full max-w-lg flex flex-col h-screen bg-white/95 backdrop-blur-2xl shadow-[0_12px_45px_rgba(0,0,0,0.06)] border-x border-stone-200/80 relative">
         {/* HEADER BAR */}
         <header className="px-4 py-3 bg-white/95 backdrop-blur-md border-b border-stone-200/80 flex items-center justify-between shrink-0 shadow-sm z-20">
@@ -278,17 +440,27 @@ const ChatRoom = () => {
             >
               ←
             </button>
-            <img
-              src={currentMatch.avatar}
-              alt={currentMatch.name}
-              className="w-10 h-10 rounded-full object-cover border-2 border-[#711A31] shadow-sm shrink-0"
-            />
+            <div className="relative">
+              <img
+                src={currentMatch.avatar}
+                alt={currentMatch.name}
+                className="w-10 h-10 rounded-full object-cover border-2 border-[#711A31] shadow-sm shrink-0"
+              />
+              <span
+                className={`absolute bottom-0 right-0 w-3 h-3 rounded-full border-2 border-white shadow-sm ${
+                  isTargetOnline ? "bg-emerald-500 animate-pulse" : "bg-stone-300"
+                }`}
+                title={isTargetOnline ? "Online Now" : "Offline (Notified via queue)"}
+              />
+            </div>
             <div>
               <div className="flex items-center space-x-1.5">
                 <span className="font-serif font-black text-sm text-stone-900">
                   {currentMatch.name}, {currentMatch.age}
                 </span>
-                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                <span className="text-[10px] font-bold text-stone-500">
+                  {isTargetOnline ? "● Active now" : "Offline"}
+                </span>
               </div>
               <span className="text-[10px] font-bold text-[#711A31] flex items-center">
                 🔒 Anti-Ghosting Escrow Protected
@@ -303,7 +475,7 @@ const ChatRoom = () => {
               className="bg-stone-100 hover:bg-stone-200 text-stone-800 text-[11px] font-extrabold px-3 py-1.5 rounded-xl transition flex items-center space-x-1 border border-stone-200 shadow-sm"
               title="Generate Real-World Date Pass"
             >
-              <span>📍</span>
+              <MapPin className="w-3.5 h-3.5 text-[#711A31]" />
               <span className="hidden sm:inline">Date Pass</span>
             </button>
             <button
@@ -317,7 +489,7 @@ const ChatRoom = () => {
         </header>
 
         {/* ANTI-GHOSTING ESCROW COUNTDOWN BANNER */}
-        <div className="bg-[#711A31] text-white px-4 py-2.5 flex items-center justify-between text-xs shrink-0 shadow-inner">
+        <div className="bg-[#711A31] text-white px-4 py-2 flex items-center justify-between text-xs shrink-0 shadow-inner">
           <div className="flex items-center space-x-2">
             <span className="text-rose-100 font-semibold">⏱️ Inactivity Deadline:</span>
             <span className="font-mono font-black text-white text-sm tracking-wide">
@@ -332,16 +504,15 @@ const ChatRoom = () => {
         {/* MESSAGES FEED */}
         <div className="flex-1 p-4 overflow-y-auto space-y-3 bg-[#FAF8F5]">
           {/* Welcome Intro */}
-          <div className="text-center py-4 px-2">
-            <div className="w-12 h-12 rounded-2xl bg-white shadow-sm border border-stone-200 flex items-center justify-center mx-auto mb-2 text-2xl">
+          <div className="text-center py-3 px-2">
+            <div className="w-10 h-10 rounded-2xl bg-white shadow-sm border border-stone-200 flex items-center justify-center mx-auto mb-2 text-xl">
               ✨
             </div>
-            <h3 className="font-serif font-black text-base text-stone-900">
-              Single-Slot Focus Initialized
+            <h3 className="font-serif font-black text-sm text-stone-900">
+              Single-Slot Focus Initialized with {currentMatch.name}
             </h3>
-            <p className="text-xs text-stone-500 max-w-xs mx-auto mt-1">
-              Both parties locked 1 token in escrow. Mutual polite closes refund
-              100% of tokens. Inactivity beyond 24h burns tokens.
+            <p className="text-[11px] text-stone-500 max-w-xs mx-auto mt-0.5">
+              Real-time messaging via Socket.IO with offline notification delivery.
             </p>
           </div>
 
@@ -350,10 +521,11 @@ const ChatRoom = () => {
               return (
                 <div
                   key={index}
-                  className="bg-gradient-to-r from-rose-50 to-orange-50 border border-rose-200 rounded-2xl p-3.5 shadow-sm text-xs text-stone-800 animate-fadeIn"
+                  className="bg-gradient-to-r from-rose-50 to-orange-50 border border-rose-200 rounded-2xl p-3 shadow-sm text-xs text-stone-800 animate-fadeIn"
                 >
                   <div className="flex items-center space-x-1.5 text-rose-600 font-bold mb-1">
-                    <span>⚡ AI Wingman Co-Pilot</span>
+                    <Sparkles className="w-3.5 h-3.5" />
+                    <span>AI Wingman Co-Pilot</span>
                   </div>
                   <p className="italic font-medium">{msg.message}</p>
                 </div>
@@ -362,7 +534,7 @@ const ChatRoom = () => {
 
             return (
               <div
-                key={index}
+                key={msg.id || index}
                 className={`flex ${
                   msg.isMine ? "justify-end" : "justify-start"
                 }`}
@@ -375,20 +547,43 @@ const ChatRoom = () => {
                   }`}
                 >
                   <p>{msg.message}</p>
-                  <span
-                    className={`text-[9px] block text-right mt-1 ${
-                      msg.isMine ? "text-rose-200" : "text-stone-400"
-                    }`}
-                  >
-                    {new Date(msg.timestamp).toLocaleTimeString([], {
-                      hour: "2-digit",
-                      minute: "2-digit",
-                    })}
-                  </span>
+                  <div className="flex items-center justify-end space-x-1 mt-1 text-[9px]">
+                    <span className={msg.isMine ? "text-rose-200" : "text-stone-400"}>
+                      {new Date(msg.timestamp).toLocaleTimeString([], {
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      })}
+                    </span>
+                    {msg.isMine && (
+                      <span className="text-rose-200">
+                        {msg.status === "read" ? (
+                          <CheckCheck className="w-3.5 h-3.5 text-sky-300 inline" />
+                        ) : msg.status === "delivered" ? (
+                          <CheckCheck className="w-3.5 h-3.5 text-stone-300 inline" />
+                        ) : (
+                          <Check className="w-3 h-3 text-stone-300 inline" />
+                        )}
+                      </span>
+                    )}
+                  </div>
                 </div>
               </div>
             );
           })}
+
+          {/* Typing Bubble */}
+          {isPeerTyping && (
+            <div className="flex items-center space-x-2 text-stone-500 text-xs italic bg-white/80 backdrop-blur-sm border border-stone-200 rounded-2xl px-3.5 py-2 w-max animate-pulse">
+              <span>{currentMatch.name} is typing...</span>
+              <span className="flex space-x-1">
+                <span className="w-1.5 h-1.5 bg-[#711A31] rounded-full animate-bounce"></span>
+                <span className="w-1.5 h-1.5 bg-[#711A31] rounded-full animate-bounce" style={{ animationDelay: "0.2s" }}></span>
+                <span className="w-1.5 h-1.5 bg-[#711A31] rounded-full animate-bounce" style={{ animationDelay: "0.4s" }}></span>
+              </span>
+            </div>
+          )}
+
+          <div ref={messagesEndRef} />
         </div>
 
         {/* AI WINGMAN TRIGGER BAR */}
@@ -401,7 +596,7 @@ const ChatRoom = () => {
             disabled={wingmanLoading}
             className="text-xs font-black text-[#711A31] hover:text-[#581426] bg-rose-50 hover:bg-rose-100 border border-rose-200 px-3.5 py-1 rounded-xl transition flex items-center space-x-1 active:scale-95 shadow-sm"
           >
-            <span>✨</span>
+            <Sparkles className="w-3.5 h-3.5" />
             <span>{wingmanLoading ? "Analyzing..." : "Ask AI Wingman"}</span>
           </button>
         </div>
@@ -414,8 +609,12 @@ const ChatRoom = () => {
           <input
             type="text"
             value={currentMessage}
-            onChange={(e) => setCurrentMessage(e.target.value)}
-            placeholder="Type a thoughtful, anti-ghosting reply..."
+            onChange={handleInputChange}
+            placeholder={
+              isTargetOnline
+                ? "Type a message..."
+                : `Message ${currentMatch.name} (delivered via offline queue)...`
+            }
             className="flex-1 bg-stone-50 border border-stone-200 rounded-2xl px-4 py-3 text-xs md:text-sm text-stone-900 focus:outline-none focus:border-[#711A31] transition"
           />
           <button
@@ -449,11 +648,10 @@ const ChatRoom = () => {
               free artisanal coffee & verified real-world trust scores!
             </p>
 
-            {/* QR Simulation Box */}
             <div className="w-48 h-48 mx-auto bg-stone-50 border-2 border-dashed border-stone-300 rounded-2xl p-4 flex flex-col items-center justify-center relative mb-4">
               <img
                 src={`https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=${encodeURIComponent(
-                  qrToken,
+                  qrToken
                 )}`}
                 alt="Date Pass QR"
                 className="w-full h-full object-contain"

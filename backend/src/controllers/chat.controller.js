@@ -152,3 +152,131 @@ exports.closeMatch = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
+
+
+// 5. Get Conversation Messages History (Dual-layer fallback & initial load)
+exports.getConversationMessages = async (req, res) => {
+  try {
+    const { targetUserId } = req.params;
+    const userId = req.user.id;
+
+    const result = await pool.query(
+      `SELECT id, session_id, sender_id, receiver_id, message, is_delivered, is_read, created_at as timestamp 
+       FROM chat_messages 
+       WHERE ((sender_id = $1 AND receiver_id = $2) OR (sender_id = $2 AND receiver_id = $1)) 
+       ORDER BY created_at ASC LIMIT 100`,
+      [String(userId), String(targetUserId)]
+    );
+
+    res.json({
+      success: true,
+      messages: result.rows.map((row) => ({
+        ...row,
+        isMine: row.sender_id === String(userId),
+      })),
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+// 6. Send Message via REST API (Fallback when socket connection is unavailable)
+exports.sendMessageFallback = async (req, res) => {
+  try {
+    const { receiverId, message, senderName, senderAvatar, sessionId } = req.body;
+    const senderId = req.user.id;
+
+    if (!receiverId || !message || !message.trim()) {
+      return res.status(400).json({ message: "Receiver ID and message content are required." });
+    }
+
+    const text = message.trim();
+
+    // 1. Persist message in PostgreSQL
+    const msgRes = await pool.query(
+      `INSERT INTO chat_messages (session_id, sender_id, receiver_id, message, is_delivered) 
+       VALUES ($1, $2, $3, $4, FALSE) 
+       RETURNING id, created_at`,
+      [sessionId || null, String(senderId), String(receiverId), text]
+    );
+
+    // 2. Queue offline notification
+    await pool.query(
+      `INSERT INTO offline_notifications 
+        (user_id, sender_id, sender_name, sender_avatar, message_preview) 
+       VALUES ($1, $2, $3, $4, $5)`,
+      [
+        String(receiverId),
+        String(senderId),
+        senderName || req.user.displayName || "A Match",
+        senderAvatar || "",
+        text.slice(0, 200),
+      ]
+    );
+
+    res.status(201).json({
+      success: true,
+      message: "Message saved and offline notification queued.",
+      data: {
+        id: msgRes.rows[0].id,
+        senderId: String(senderId),
+        receiverId: String(receiverId),
+        message: text,
+        timestamp: msgRes.rows[0].created_at,
+        isMine: true,
+      },
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+// 7. Get Offline / Unread Notifications
+exports.getOfflineNotifications = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const result = await pool.query(
+      `SELECT id, sender_id, sender_name, sender_avatar, message_preview, created_at 
+       FROM offline_notifications 
+       WHERE user_id = $1 AND is_read = FALSE 
+       ORDER BY created_at DESC LIMIT 30`,
+      [String(userId)]
+    );
+
+    res.json({
+      success: true,
+      count: result.rows.length,
+      notifications: result.rows,
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+// 8. Mark Notifications / Messages as Read
+exports.markNotificationsRead = async (req, res) => {
+  try {
+    const { senderId } = req.body;
+    const userId = req.user.id;
+
+    if (senderId) {
+      await pool.query(
+        "UPDATE chat_messages SET is_read = TRUE WHERE receiver_id = $1 AND sender_id = $2",
+        [String(userId), String(senderId)]
+      );
+      await pool.query(
+        "UPDATE offline_notifications SET is_read = TRUE WHERE user_id = $1 AND sender_id = $2",
+        [String(userId), String(senderId)]
+      );
+    } else {
+      await pool.query(
+        "UPDATE offline_notifications SET is_read = TRUE WHERE user_id = $1",
+        [String(userId)]
+      );
+    }
+
+    res.json({ success: true, message: "Marked as read." });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
