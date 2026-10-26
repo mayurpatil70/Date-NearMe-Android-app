@@ -1,4 +1,5 @@
 import { Playfair_Display, Plus_Jakarta_Sans } from "next/font/google";
+import Script from "next/script";
 import "../src/index.css";
 import { AuthProvider } from "../src/Context/AuthContext";
 import { SocketProvider } from "../src/Context/SocketContext";
@@ -28,6 +29,10 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en" className={`${playfair.variable} ${jakarta.variable}`}>
       <body className="min-h-screen bg-[#FAF8F5] text-[#1C1917] font-sans antialiased selection:bg-[#711A31]/15 selection:text-[#711A31]">
+        <Script
+          src="https://checkout.razorpay.com/v1/checkout.js"
+          strategy="lazyOnload"
+        />
         <AuthProvider>
           <SocketProvider>
             {children}

@@ -31,9 +31,16 @@ export const SocketProvider = ({ children }) => {
 
       const rawUrl = getSocketUrl();
 
-      // Connect to the backend
+      // Connect to the backend with resilience
       const newSocket = io(rawUrl, {
         transports: ["websocket", "polling"],
+        reconnectionAttempts: 2,
+        timeout: 5000,
+        autoConnect: true,
+      });
+
+      newSocket.on("connect_error", () => {
+        // Handled silently to avoid noisy uncaught console crashes on serverless deploys
       });
 
       newSocket.on("connect", () => {

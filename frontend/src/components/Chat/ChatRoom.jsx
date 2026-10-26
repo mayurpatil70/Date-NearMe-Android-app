@@ -7,14 +7,63 @@ import { AuthContext } from "../../Context/AuthContext";
 import { SocketContext } from "../../Context/SocketContext";
 import api from "../../api/axiosConfig";
 
+const KNOWN_MATCH_PROFILES = {
+  like_1: {
+    name: "Archie",
+    age: 24,
+    avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=600&q=80",
+    initialMsg: "Hey! Loved your prompt about coffee dates ☕ Subko or Blue Tokai this weekend?",
+    diet: "Pure Veg",
+    location: "Bandra West, Mumbai",
+  },
+  m1: {
+    name: "Kalpesh",
+    age: 26,
+    avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=600&q=80",
+    initialMsg: "Haha totally agree! Have you visited the new Subko cafe in Bandra?",
+    diet: "Pure Veg",
+    location: "Khar West, Mumbai",
+  },
+  m2: {
+    name: "Aisha",
+    age: 25,
+    avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=600&q=80",
+    initialMsg: "Subko or Blue Tokai this weekend? I know a great quiet corner table!",
+    diet: "Pure Veg",
+    location: "Carter Road, Mumbai",
+  },
+  m3: {
+    name: "Shubham",
+    age: 27,
+    avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=600&q=80",
+    initialMsg: "Hey! Let's plan a coffee date with the Date-NearMe 15% discount!",
+    diet: "Jain",
+    location: "Pali Hill, Mumbai",
+  },
+};
+
 const ChatRoom = () => {
   const params = useParams();
-  const targetUserId = params?.id || params?.targetUserId;
+  const targetUserId = params?.id || params?.targetUserId || "like_1";
   const { user, updateWallet } = useContext(AuthContext);
   const socket = useContext(SocketContext);
   const router = useRouter();
 
-  const [messages, setMessages] = useState([]);
+  const currentMatch = KNOWN_MATCH_PROFILES[targetUserId] || {
+    name: targetUserId.startsWith("like") ? "Archie" : "Date Match",
+    age: 24,
+    avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=600&q=80",
+    initialMsg: "Hey! Let's plan a date at our partner cafe with 15% off!",
+  };
+
+  const [messages, setMessages] = useState([
+    {
+      senderId: targetUserId,
+      message: currentMatch.initialMsg,
+      timestamp: new Date(Date.now() - 1000 * 60 * 15),
+      isMine: false,
+    },
+  ]);
   const [currentMessage, setCurrentMessage] = useState("");
   const [timeLeft, setTimeLeft] = useState(24 * 3600 - 180); // 23h 57m
   const [escrowStatus, setEscrowStatus] = useState("LOCKED_ESCROW"); // LOCKED_ESCROW, ACTIVE, MUTUAL_CLOSE, FORFEIT
@@ -61,8 +110,7 @@ const ChatRoom = () => {
     };
 
     const handleChatError = (errorData) => {
-      toast.error(errorData.message);
-      router.push("/radar");
+      toast.error(errorData?.message || "Chat notification received");
     };
 
     socket.on("receive_message", handleReceiveMessage);
@@ -72,7 +120,7 @@ const ChatRoom = () => {
       socket.off("receive_message", handleReceiveMessage);
       socket.off("chat_error", handleChatError);
     };
-  }, [socket, targetUserId, navigate]);
+  }, [socket, targetUserId, router]);
 
   const sendMessage = (e) => {
     e.preventDefault();
@@ -230,13 +278,15 @@ const ChatRoom = () => {
             >
               ←
             </button>
-            <div className="w-9 h-9 rounded-full bg-[#711A31] text-white font-serif font-black text-xs flex items-center justify-center border-2 border-white shadow-sm">
-              DP
-            </div>
+            <img
+              src={currentMatch.avatar}
+              alt={currentMatch.name}
+              className="w-10 h-10 rounded-full object-cover border-2 border-[#711A31] shadow-sm shrink-0"
+            />
             <div>
               <div className="flex items-center space-x-1.5">
                 <span className="font-serif font-black text-sm text-stone-900">
-                  Active Match Slot
+                  {currentMatch.name}, {currentMatch.age}
                 </span>
                 <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
               </div>

@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useRef, useContext } from "react";
 import { useRouter } from "next/navigation";
+import LiveDatingMap from "./LiveDatingMap";
 import toast from "react-hot-toast";
 import { AuthContext } from "../../Context/AuthContext";
 import api from "../../api/axiosConfig";
@@ -432,12 +433,24 @@ const initialMatches = [
   },
 ];
 
-const Radar = () => {
+const Radar = ({ initialTab = "discover" }) => {
   const router = useRouter();
   const { user, updateUserProfile, logout } = useContext(AuthContext);
 
-  // Tabs: 'discover' | 'standouts' | 'likes' | 'matches' | 'profile' | 'feed' | 'reels' | 'cafes' | 'affiliate'
-  const [activeTab, setActiveTab] = useState("discover");
+  // Tabs: 'discover' | 'map' | 'likes' | 'matches' | 'profile' | 'feed' | 'reels' | 'cafes' | 'affiliate'
+  const [activeTab, setActiveTab] = useState(initialTab === "standouts" ? "likes" : initialTab);
+  const [likesSubTab, setLikesSubTab] = useState(initialTab === "standouts" ? "standouts" : "likes");
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      const urlTab = params.get("tab");
+      if (urlTab) {
+        setActiveTab(urlTab === "standouts" ? "likes" : urlTab);
+        if (urlTab === "standouts") setLikesSubTab("standouts");
+      }
+    }
+  }, []);
 
   // Social Feed & Following state (Instagram/YouTube ecosystem)
   const [followingMap, setFollowingMap] = useState({
@@ -1261,17 +1274,20 @@ const Radar = () => {
               <span>Dating Radar</span>
             </button>
 
-            {/* 4. Standouts */}
+            {/* 4. Near Me Map */}
             <button
-              onClick={() => setActiveTab("standouts")}
+              onClick={() => {
+                setActiveTab("map");
+                window.scrollTo({ top: 0, behavior: "smooth" });
+              }}
               className={`flex items-center space-x-3.5 px-4 py-3 rounded-2xl transition ${
-                activeTab === "standouts"
+                activeTab === "map"
                   ? "bg-[#711A31] text-white shadow-md shadow-[#711A31]/20 font-bold"
                   : "text-stone-600 hover:text-stone-900 hover:bg-stone-100/80"
               }`}
             >
-              <span className="text-xl">⭐</span>
-              <span>Standouts</span>
+              <span className="text-xl">🗺️</span>
+              <span>Near Me Map</span>
             </button>
 
             {/* 5. Likes You */}
@@ -1989,7 +2005,7 @@ const Radar = () => {
             TAB 1: DISCOVER (MAIN HINGE STREAM WITH GLASS CARDS & CULTURAL DEALBREAKERS)
            ========================================================================= */}
         {activeTab === "discover" && (
-          <div className="w-full max-w-2xl px-2 sm:px-4 pt-4 flex flex-col items-center z-10">
+          <div className="w-full max-w-2xl px-2 sm:px-4 pt-4 pb-32 flex flex-col items-center z-10">
             {/* Instagram-Style Stories Tray at top of Discover tab */}
             {renderStoriesTray()}
 
@@ -2337,156 +2353,196 @@ const Radar = () => {
         </div>
       )}
 
+      
       {/* =========================================================================
-          TAB 2: STANDOUTS
+          TAB: NEAR ME LIVE MAP RADAR (Active Users & Partner Cafes)
          ========================================================================= */}
-      {activeTab === "standouts" && (
-        <div className="w-full max-w-4xl px-4 pt-4 flex flex-col space-y-4 z-10">
-          <div className="bg-white/95 backdrop-blur-2xl rounded-[2rem] p-6 border border-stone-200/80 shadow-[0_12px_35px_rgba(0,0,0,0.04)]">
-            <div className="flex justify-between items-center mb-1">
-              <div className="flex items-center space-x-2">
-                <h2 className="text-2xl font-serif font-black text-stone-900">Standouts</h2>
-                <button
-                  onClick={() =>
-                    toast("Curated daily based on prompt resonance and shared relationship values.", {
-                      icon: "💡",
-                    })
-                  }
-                  className="text-stone-400 hover:text-stone-700 transition"
-                  title="About Standouts"
-                >
-                  <Info className="w-4 h-4" />
-                </button>
-              </div>
-              <button
-                onClick={() =>
-                  toast("You get 1 free Rose every week to pin your profile to their top queue!", {
-                    icon: "🌹",
-                  })
-                }
-                className="text-xs font-bold text-[#241026] bg-[#BBA7BE] hover:bg-[#AE97B1] px-3.5 py-1.5 rounded-full border border-[#A68EA5]/40 shadow-sm flex items-center space-x-1.5 transition active:scale-95"
-              >
-                <span>🌹</span>
-                <span>Roses ({rosesRemaining})</span>
-              </button>
-            </div>
-            <p className="text-xs text-stone-600 font-medium leading-relaxed">
-              Curated daily based on prompt resonance and shared relationship values. Sending a Rose pins you to the top of their queue.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {initialStandouts.map((standout) => (
-              <div
-                key={standout.id}
-                className="bg-white/95 backdrop-blur-2xl rounded-[2rem] overflow-hidden border border-stone-200/80 shadow-[0_12px_35px_rgba(0,0,0,0.04)] hover:shadow-[0_16px_40px_rgba(0,0,0,0.07)] transition duration-300"
-              >
-                <div className="w-full h-72 relative bg-stone-100">
-                  <img src={standout.img} alt={standout.name} className="w-full h-full object-cover" />
-                  <div className="absolute bottom-3 left-3 bg-black/65 backdrop-blur-md px-3.5 py-1 rounded-full text-white text-xs font-bold shadow-md">
-                    {standout.name}, {standout.age} • {standout.city}
-                  </div>
-                </div>
-
-                <div className="p-6">
-                  <p className="text-[11px] font-black uppercase text-[#711A31] tracking-wider mb-1">
-                    {standout.promptLabel}
-                  </p>
-                  <p className="font-serif text-lg font-medium text-stone-900 mb-5 leading-snug">
-                    "{standout.promptAnswer}"
-                  </p>
-                  <button
-                    onClick={() => handleSendRose(standout)}
-                    className="w-full bg-[#711A31] hover:bg-[#581426] text-white font-extrabold text-xs py-3.5 rounded-2xl shadow-md flex items-center justify-center space-x-1.5 transition active:scale-95"
-                  >
-                    <span>🌹</span>
-                    <span>Send Rose & Jump to Top of Queue</span>
-                  </button>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
+      {activeTab === "map" && (
+        <LiveDatingMap
+          onSelectMatchForChat={(targetUser) => {
+            router.push(`/chat/${targetUser.id}`);
+          }}
+        />
       )}
 
       {/* =========================================================================
-          TAB 3: LIKES YOU
+          TAB: LIKES YOU & STANDOUTS (CONSOLIDATED ROUTE)
          ========================================================================= */}
-      {activeTab === "likes" && (
-        <div className="w-full max-w-2xl px-4 pt-4 flex flex-col space-y-4 z-10">
-          <div className="bg-white/95 backdrop-blur-2xl rounded-[2rem] p-6 border border-stone-200/80 shadow-[0_12px_35px_rgba(0,0,0,0.04)]">
-            <h2 className="text-2xl font-serif font-black text-stone-900">Likes You</h2>
-            <p className="text-xs text-stone-600 font-medium mt-1 leading-relaxed">
-              People who commented on your profile. Review them one by one with single-slot focus.
-            </p>
+      {(activeTab === "likes" || activeTab === "standouts") && (
+        <div className="w-full max-w-2xl px-4 pt-4 pb-32 flex flex-col space-y-4 z-10">
+          {/* Header & Sub-nav Toggle */}
+          <div className="bg-white/95 backdrop-blur-2xl rounded-[2rem] p-5 border border-stone-200/80 shadow-[0_12px_35px_rgba(0,0,0,0.04)]">
+            <div className="flex justify-between items-center mb-3">
+              <div>
+                <h2 className="text-2xl font-serif font-black text-stone-900">
+                  {likesSubTab === "standouts" ? "Curated Standouts" : "Likes You"}
+                </h2>
+                <p className="text-xs text-stone-600 font-medium mt-0.5 leading-relaxed">
+                  {likesSubTab === "standouts"
+                    ? "Curated daily based on prompt resonance and shared relationship values. Send a Rose to jump to the top!"
+                    : "People who commented on your profile. Review them one by one with single-slot focus."}
+                </p>
+              </div>
+              {likesSubTab === "standouts" && (
+                <button
+                  onClick={() =>
+                    toast("You get 1 free Rose every week to pin your profile to their top queue!", {
+                      icon: "🌹",
+                    })
+                  }
+                  className="text-xs font-bold text-[#241026] bg-[#BBA7BE] hover:bg-[#AE97B1] px-3.5 py-1.5 rounded-full border border-[#A68EA5]/40 shadow-sm flex items-center space-x-1.5 transition active:scale-95 shrink-0"
+                >
+                  <span>🌹</span>
+                  <span>Roses ({rosesRemaining})</span>
+                </button>
+              )}
+            </div>
+
+            {/* Sub-nav Pill Selector */}
+            <div className="bg-stone-100 p-1 rounded-2xl flex items-center space-x-1">
+              <button
+                onClick={() => setLikesSubTab("likes")}
+                className={`flex-1 py-2 rounded-xl text-xs font-bold transition flex items-center justify-center space-x-1.5 ${
+                  likesSubTab === "likes"
+                    ? "bg-[#711A31] text-white shadow-sm"
+                    : "text-stone-600 hover:text-stone-900 hover:bg-stone-200/70"
+                }`}
+              >
+                <span>❤️ Likes Received</span>
+                <span
+                  className={`text-[10px] px-1.5 py-0.2 rounded-full font-black ${
+                    likesSubTab === "likes" ? "bg-white/20 text-white" : "bg-stone-200 text-stone-700"
+                  }`}
+                >
+                  {likesYouList.length}
+                </span>
+              </button>
+              <button
+                onClick={() => setLikesSubTab("standouts")}
+                className={`flex-1 py-2 rounded-xl text-xs font-bold transition flex items-center justify-center space-x-1.5 ${
+                  likesSubTab === "standouts"
+                    ? "bg-[#711A31] text-white shadow-sm"
+                    : "text-stone-600 hover:text-stone-900 hover:bg-stone-200/70"
+                }`}
+              >
+                <span>🌹 Curated Standouts</span>
+                <span
+                  className={`text-[10px] px-1.5 py-0.2 rounded-full font-black ${
+                    likesSubTab === "standouts" ? "bg-white/20 text-white" : "bg-[#BBA7BE]/30 text-purple-900"
+                  }`}
+                >
+                  {initialStandouts.length}
+                </span>
+              </button>
+            </div>
           </div>
 
-          {likesYouList.length === 0 ? (
-            <HingeLikesYouEmpty
-              onBoostClick={() => toast.success("Boost activated for 1 hour! Profile prioritized.")}
-              onUpgradeClick={() => toast("HingeX subscription unlocked! Enjoy priority likes.", { icon: "✦" })}
-            />
-          ) : (
-            <div className="space-y-4">
-              {likesYouList.map((like) => (
+          {/* Sub-view 1: Likes Received */}
+          {likesSubTab === "likes" && (
+            <div>
+              {likesYouList.length === 0 ? (
+                <HingeLikesYouEmpty
+                  onBoostClick={() => toast.success("Boost activated for 1 hour! Profile prioritized.")}
+                  onUpgradeClick={() => toast("HingeX subscription unlocked! Enjoy priority likes.", { icon: "✦" })}
+                />
+              ) : (
+                <div className="space-y-4">
+                  {likesYouList.map((like) => (
+                    <div
+                      key={like.id}
+                      className="bg-white/95 backdrop-blur-2xl rounded-[2rem] overflow-hidden border border-stone-200/80 shadow-[0_12px_35px_rgba(0,0,0,0.04)]"
+                    >
+                      <div className="w-full h-72 relative bg-stone-100">
+                        <img src={like.img} alt={like.user} className="w-full h-full object-cover" />
+                        <div className="absolute top-3 right-3 bg-white/90 backdrop-blur-md text-[#711A31] text-[10px] font-black px-3 py-1 rounded-full uppercase shadow-sm border border-stone-200/60">
+                          {like.time}
+                        </div>
+                        <div className="absolute bottom-3 left-3 bg-black/65 backdrop-blur-md px-3.5 py-1 rounded-full text-white text-xs font-bold shadow-md">
+                          {like.user}, {like.age} • {like.job}
+                        </div>
+                      </div>
+
+                      <div className="p-6">
+                        <div className="bg-stone-50 rounded-2xl p-4 border border-stone-200/70 mb-5">
+                          <span className="text-[11px] font-black uppercase text-[#711A31] tracking-wider block">
+                            Liked {like.likedItem}:
+                          </span>
+                          <p className="text-sm font-serif italic text-stone-900 mt-1 leading-relaxed">
+                            "{like.comment}"
+                          </p>
+                        </div>
+
+                        <div className="flex items-center space-x-3">
+                          <button
+                            onClick={() => setLikesYouList((l) => l.filter((x) => x.id !== like.id))}
+                            className="w-12 h-12 rounded-full border border-stone-200 bg-white text-stone-500 font-bold hover:bg-stone-100 flex items-center justify-center shrink-0 shadow-sm transition"
+                            title="Pass"
+                          >
+                            ✕
+                          </button>
+                          <button
+                            onClick={() => {
+                              setActiveChatSlot({ id: like.id, name: like.user });
+                              setMatchesList((prev) => [
+                                {
+                                  id: like.id,
+                                  name: like.user,
+                                  age: like.age,
+                                  avatar: like.img,
+                                  lastMessage: like.comment || "Matched from Likes You!",
+                                  time: "Just now",
+                                  unread: true,
+                                  hoursRemaining: 48,
+                                  diet: "Pure Veg",
+                                  partnerCafe: "Third Wave Coffee",
+                                },
+                                ...prev,
+                              ]);
+                              setLikesYouList((prev) => prev.filter((l) => l.id !== like.id));
+                              router.push(`/chat/${like.id}`);
+                            }}
+                            className="flex-1 bg-[#711A31] hover:bg-[#581426] text-white font-extrabold text-xs py-3.5 rounded-full shadow-md transition active:scale-95"
+                          >
+                            Match & Start Chatting
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Sub-view 2: Curated Standouts */}
+          {likesSubTab === "standouts" && (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {initialStandouts.map((standout) => (
                 <div
-                  key={like.id}
-                  className="bg-white/95 backdrop-blur-2xl rounded-[2rem] overflow-hidden border border-stone-200/80 shadow-[0_12px_35px_rgba(0,0,0,0.04)]"
+                  key={standout.id}
+                  className="bg-white/95 backdrop-blur-2xl rounded-[2rem] overflow-hidden border border-stone-200/80 shadow-[0_12px_35px_rgba(0,0,0,0.04)] hover:shadow-[0_16px_40px_rgba(0,0,0,0.07)] transition duration-300"
                 >
                   <div className="w-full h-72 relative bg-stone-100">
-                    <img src={like.img} alt={like.user} className="w-full h-full object-cover" />
-                    <div className="absolute top-3 right-3 bg-white/90 backdrop-blur-md text-[#711A31] text-[10px] font-black px-3 py-1 rounded-full uppercase shadow-sm border border-stone-200/60">
-                      {like.time}
-                    </div>
+                    <img src={standout.img} alt={standout.name} className="w-full h-full object-cover" />
                     <div className="absolute bottom-3 left-3 bg-black/65 backdrop-blur-md px-3.5 py-1 rounded-full text-white text-xs font-bold shadow-md">
-                      {like.user}, {like.age} • {like.job}
+                      {standout.name}, {standout.age} • {standout.city}
                     </div>
                   </div>
 
                   <div className="p-6">
-                    <div className="bg-stone-50 rounded-2xl p-4 border border-stone-200/70 mb-5">
-                      <span className="text-[11px] font-black uppercase text-[#711A31] tracking-wider block">
-                        Liked {like.likedItem}:
-                      </span>
-                      <p className="text-sm font-serif italic text-stone-900 mt-1 leading-relaxed">
-                        "{like.comment}"
-                      </p>
-                    </div>
-
-                    <div className="flex items-center space-x-3">
-                      <button
-                        onClick={() => setLikesYouList((l) => l.filter((x) => x.id !== like.id))}
-                        className="w-12 h-12 rounded-full border border-stone-200 bg-white text-stone-500 font-bold hover:bg-stone-100 flex items-center justify-center shrink-0 shadow-sm transition"
-                        title="Pass"
-                      >
-                        ✕
-                      </button>
-                      <button
-                        onClick={() => {
-                          setActiveChatSlot({ id: like.id, name: like.user });
-                          setMatchesList((prev) => [
-                            {
-                              id: like.id,
-                              name: like.user,
-                              age: like.age,
-                              avatar: like.img,
-                              lastMessage: like.comment || "Matched from Likes You!",
-                              time: "Just now",
-                              unread: true,
-                              hoursRemaining: 48,
-                              diet: "Pure Veg",
-                              partnerCafe: "Third Wave Coffee",
-                            },
-                            ...prev,
-                          ]);
-                          setLikesYouList((prev) => prev.filter((l) => l.id !== like.id));
-                          router.push(`/chat/${like.id}`);
-                        }}
-                        className="flex-1 bg-[#711A31] hover:bg-[#581426] text-white font-extrabold text-xs py-3.5 rounded-full shadow-md transition active:scale-95"
-                      >
-                        Match & Start Chatting
-                      </button>
-                    </div>
+                    <p className="text-[11px] font-black uppercase text-[#711A31] tracking-wider mb-1">
+                      {standout.promptLabel}
+                    </p>
+                    <p className="font-serif text-lg font-medium text-stone-900 mb-5 leading-snug">
+                      "{standout.promptAnswer}"
+                    </p>
+                    <button
+                      onClick={() => handleSendRose(standout)}
+                      className="w-full bg-[#711A31] hover:bg-[#581426] text-white font-extrabold text-xs py-3.5 rounded-2xl shadow-md flex items-center justify-center space-x-1.5 transition active:scale-95"
+                    >
+                      <span>🌹</span>
+                      <span>Send Rose & Jump to Top of Queue</span>
+                    </button>
                   </div>
                 </div>
               ))}
@@ -2494,12 +2550,11 @@ const Radar = () => {
           )}
         </div>
       )}
-
-      {/* =========================================================================
+{/* =========================================================================
           TAB 4: MATCHES & CHAT (48H ANTI-GHOSTING TIMER & SAFE DATE CONCIERGE)
          ========================================================================= */}
       {activeTab === "matches" && (
-        <div className="w-full max-w-3xl px-4 pt-4 flex flex-col space-y-4 z-10">
+        <div className="w-full max-w-3xl px-4 pt-4 pb-32 flex flex-col space-y-4 z-10">
           <div className="bg-white/95 backdrop-blur-2xl rounded-[2rem] p-6 border border-stone-200/80 shadow-[0_12px_35px_rgba(0,0,0,0.04)]">
             <h2 className="text-2xl font-serif font-black text-stone-900">Conversations</h2>
             <p className="text-xs text-stone-600 font-medium mt-1 leading-relaxed">
@@ -2543,7 +2598,7 @@ const Radar = () => {
                   onClick={() => router.push(`/chat/${m.id}`)}
                   className="flex items-center space-x-3.5 cursor-pointer"
                 >
-                  <img src={m.avatar} alt={m.name} className="w-13 h-13 rounded-full object-cover shrink-0 shadow-sm" />
+                  <img src={m.avatar} alt={m.name} className="w-14 h-14 min-w-[3.5rem] min-h-[3.5rem] rounded-full object-cover shrink-0 shadow-sm border border-stone-200" />
                   <div className="flex-1 min-w-0">
                     <div className="flex justify-between items-baseline">
                       <h4 className="text-sm font-bold text-stone-900 truncate">
@@ -2557,7 +2612,7 @@ const Radar = () => {
                 </div>
 
                 {/* Safe Date & Accountability Actions */}
-                <div className="flex items-center justify-between pt-2.5 border-t border-stone-100 text-xs">
+                <div className="flex flex-wrap items-center justify-between gap-2 pt-2.5 border-t border-stone-100 text-xs">
                   <span className="text-[11px] font-bold text-amber-800 bg-amber-50 px-3 py-1 rounded-full border border-amber-200 flex items-center shadow-sm">
                     ⏰ {m.hoursRemaining}h to reply
                   </span>
@@ -3876,6 +3931,7 @@ const Radar = () => {
         }}
         matchesCount={matchesList.length}
         unreadCount={matchesList.filter((m) => m.unread).length}
+        likesCount={likesYouList.length}
         userAvatar={profileForm.avatar || user?.avatar}
       />
     </div>

@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { Info, SlidersHorizontal } from "lucide-react";
+import { Info, SlidersHorizontal, MapPin } from "lucide-react";
 import toast from "react-hot-toast";
 
 export default function HingeHeader({
@@ -10,6 +10,7 @@ export default function HingeHeader({
   onRosePillClick,
   strictDealbreakers = false,
   onToggleDealbreakers,
+  showRoseInLikes = false,
 }) {
   const [showStandoutsInfo, setShowStandoutsInfo] = useState(false);
 
@@ -17,10 +18,19 @@ export default function HingeHeader({
     <header className="w-full px-5 pt-5 pb-3 flex items-center justify-between border-b border-stone-150/70 bg-[#FAF8F5]/90 backdrop-blur-md sticky top-0 z-30 transition-all">
       {/* Dynamic Left Title */}
       <div className="flex items-center space-x-2">
-        {activeTab === "standouts" && (
+        {activeTab === "map" && (
+          <div className="flex items-center space-x-2">
+            <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
+            <h1 className="text-2xl font-serif font-black tracking-tight text-stone-900">
+              Near Me Map
+            </h1>
+          </div>
+        )}
+
+        {(activeTab === "standouts" || (activeTab === "likes" && showRoseInLikes)) && (
           <div className="flex items-center space-x-1.5">
             <h1 className="text-2xl font-serif font-black tracking-tight text-stone-900">
-              Standouts
+              Likes & Standouts
             </h1>
             <button
               onClick={() => {
@@ -37,7 +47,7 @@ export default function HingeHeader({
           </div>
         )}
 
-        {activeTab === "likes" && (
+        {activeTab === "likes" && !showRoseInLikes && (
           <h1 className="text-2xl font-serif font-black tracking-tight text-stone-900">
             Likes You
           </h1>
@@ -93,8 +103,8 @@ export default function HingeHeader({
 
       {/* Dynamic Right Actions */}
       <div className="flex items-center space-x-2">
-        {/* Exact Mauve Rose Pill from Screenshot 1 & 2 */}
-        {activeTab === "standouts" && (
+        {/* Mauve Rose Pill when in Standouts or Likes Standouts sub-view */}
+        {(activeTab === "standouts" || (activeTab === "likes" && showRoseInLikes)) && (
           <button
             onClick={
               onRosePillClick ||

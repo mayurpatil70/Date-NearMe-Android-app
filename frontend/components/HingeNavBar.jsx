@@ -1,9 +1,16 @@
 "use client";
 
 import React from "react";
-import { Star, Heart, MessageSquare, Info } from "lucide-react";
+import { MapPin, Heart, MessageSquare } from "lucide-react";
 
-export default function HingeNavBar({ activeTab, onTabChange, matchesCount = 0, unreadCount = 0, userAvatar = "" }) {
+export default function HingeNavBar({
+  activeTab,
+  onTabChange,
+  matchesCount = 0,
+  unreadCount = 0,
+  likesCount = 0,
+  userAvatar = "",
+}) {
   const tabs = [
     {
       id: "discover",
@@ -15,14 +22,28 @@ export default function HingeNavBar({ activeTab, onTabChange, matchesCount = 0, 
       ),
     },
     {
-      id: "standouts",
-      label: "Standouts",
-      icon: <Star className="w-5 h-5 fill-current" strokeWidth={1.5} />,
+      id: "map",
+      label: "Near Me",
+      icon: (
+        <div className="relative">
+          <MapPin className="w-5 h-5 fill-current" strokeWidth={1.5} />
+          <span className="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+        </div>
+      ),
     },
     {
       id: "likes",
       label: "Likes You",
-      icon: <Heart className="w-5 h-5 fill-current" strokeWidth={1.5} />,
+      icon: (
+        <div className="relative">
+          <Heart className="w-5 h-5 fill-current" strokeWidth={1.5} />
+          {likesCount > 0 && (
+            <span className="absolute -top-1.5 -right-2 bg-[#711A31] text-white text-[8px] font-black px-1 rounded-full">
+              {likesCount}
+            </span>
+          )}
+        </div>
+      ),
     },
     {
       id: "matches",
