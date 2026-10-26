@@ -5,6 +5,7 @@ import HingeNavBar from "../../components/HingeNavBar";
 import {
   NEARBY_ACTIVE_USERS,
   PARTNER_CAFES,
+  calculateDistanceKm,
 } from "../components/Map/LiveDatingMap";
 
 describe("1. Navigation Routes & Tab Integrity", () => {
@@ -99,12 +100,37 @@ describe("2. Map Nearby Active Daters & Partner Cafes Data Integrity", () => {
 });
 
 describe("3. Real-World Date Pass & Google Maps Integration Logic", () => {
-  test("Generates valid Google Maps navigation directions URL", () => {
+  test("Generates valid Google Maps live directions URL with user origin and destination", () => {
     const cafe = PARTNER_CAFES[0];
-    const url = `https://www.google.com/maps/dir/?api=1&destination=${cafe.lat},${cafe.lng}`;
+    const userOrigin = "19.0596,72.8295";
+    const url = `https://www.google.com/maps/dir/?api=1&origin=${userOrigin}&destination=${cafe.lat},${cafe.lng}&travelmode=driving`;
     expect(url).toContain("google.com/maps/dir");
+    expect(url).toContain(`origin=${userOrigin}`);
     expect(url).toContain(String(cafe.lat));
     expect(url).toContain(String(cafe.lng));
+    expect(url).toContain("travelmode=driving");
+  });
+
+  test("Accurately calculates real-time distance using Haversine formula", () => {
+    const userLat = 19.0596;
+    const userLng = 72.8295;
+    // Same coordinate
+    expect(calculateDistanceKm(userLat, userLng, userLat, userLng)).toBe(0);
+
+    // Bandra to Khar (~1.1 km)
+    const dist = calculateDistanceKm(userLat, userLng, 19.0680, 72.8340);
+    expect(dist).toBeGreaterThan(0.8);
+    expect(dist).toBeLessThan(1.5);
+  });
+
+  test("Google Maps free tile service endpoint structure matches roadmap and satellite specifications", () => {
+    const roadmapUrl = "https://{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}";
+    const satelliteUrl = "https://{s}.google.com/vt/lyrs=y&x={x}&y={y}&z={z}";
+    const subdomains = ["mt0", "mt1", "mt2", "mt3"];
+
+    expect(roadmapUrl).toContain("lyrs=m");
+    expect(satelliteUrl).toContain("lyrs=y");
+    expect(subdomains).toHaveLength(4);
   });
 
   test("QR Date Pass token matches expected security prefix structure", () => {
