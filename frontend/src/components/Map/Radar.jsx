@@ -9,6 +9,7 @@ import { SocketContext } from "../../Context/SocketContext";
 import api from "../../api/axiosConfig";
 import HingeNavBar from "../../../components/HingeNavBar";
 import HingeLikesYouEmpty from "../../../components/HingeLikesYouEmpty";
+import BlindDateHub from "../BlindDate/BlindDateHub";
 import { Info } from "lucide-react";
 
 // Default Instagram-style 24h Stories matching Screenshot 3
@@ -1292,6 +1293,22 @@ const Radar = ({ initialTab = "discover" }) => {
               <span>Near Me Map</span>
             </button>
 
+            {/* Blind Date & Discord Stage */}
+            <button
+              onClick={() => {
+                setActiveTab("blind-date");
+                window.scrollTo({ top: 0, behavior: "smooth" });
+              }}
+              className={`flex items-center space-x-3.5 px-4 py-3 rounded-2xl transition ${
+                activeTab === "blind-date"
+                  ? "bg-[#711A31] text-white shadow-md shadow-[#711A31]/20 font-bold"
+                  : "text-stone-600 hover:text-stone-900 hover:bg-stone-100/80"
+              }`}
+            >
+              <span className="text-xl">🎭</span>
+              <span>Blind Date & Discord</span>
+            </button>
+
             {/* 5. Likes You */}
             <button
               onClick={() => setActiveTab("likes")}
@@ -1566,6 +1583,22 @@ const Radar = ({ initialTab = "discover" }) => {
             title="Reels & Shorts"
           >
             🎬
+          </button>
+
+          {/* Quick Blind Date & Voice Lounge */}
+          <button
+            onClick={() => {
+              setActiveTab("blind-date");
+              window.scrollTo({ top: 0, behavior: "smooth" });
+            }}
+            className={`px-2.5 py-1 rounded-full text-[11px] font-bold border transition ${
+              activeTab === "blind-date"
+                ? "bg-[#711A31] text-white border-[#711A31]"
+                : "bg-rose-50 text-[#711A31] border-rose-200 hover:bg-rose-100"
+            }`}
+            title="Start Blind Date & Discord Room"
+          >
+            🎭
           </button>
 
           {/* Quick Cafes */}
@@ -2867,6 +2900,58 @@ const Radar = ({ initialTab = "discover" }) => {
             </div>
           </div>
 
+          {/* START BLIND DATE & DISCORD ROOM FEATURE BANNER (User Request) */}
+          <div className="bg-gradient-to-br from-[#711A31] via-[#591426] to-[#3B0D19] rounded-[2rem] p-6 text-white shadow-xl relative overflow-hidden">
+            <div className="absolute -right-8 -bottom-8 w-36 h-36 bg-white/10 rounded-full blur-2xl pointer-events-none" />
+            <div className="flex items-center space-x-2 mb-2">
+              <span className="text-[10px] font-black uppercase tracking-wider bg-rose-200/20 text-rose-200 px-2.5 py-0.5 rounded-full border border-rose-200/30">
+                ✨ NEW · SPEED DATE & DISCORD ROOM
+              </span>
+            </div>
+            <h3 className="font-serif font-black text-xl text-white">
+              Start Blind Date
+            </h3>
+            <p className="text-xs text-rose-100/90 mt-1 leading-relaxed max-w-md">
+              Experience 10-minute speed dating with blurred photos (revealed only by mutual consent),
+              or create a private Discord-style voice stage room with 15% partner cafe discounts!
+            </p>
+
+            <div className="flex flex-wrap gap-2.5 mt-4">
+              <button
+                onClick={() => {
+                  setActiveTab("blind-date");
+                  window.scrollTo({ top: 0, behavior: "smooth" });
+                }}
+                className="bg-white hover:bg-rose-50 text-[#711A31] font-extrabold text-xs px-5 py-3 rounded-2xl shadow-md transition active:scale-95 flex items-center space-x-1.5 cursor-pointer"
+              >
+                <span>Start Blind Date</span>
+                <span>🎭</span>
+              </button>
+
+              <button
+                onClick={() => {
+                  setActiveTab("blind-date");
+                  window.scrollTo({ top: 0, behavior: "smooth" });
+                }}
+                className="bg-white/15 hover:bg-white/25 text-white font-bold text-xs px-4 py-3 rounded-2xl border border-white/20 transition active:scale-95 flex items-center space-x-1.5 cursor-pointer"
+              >
+                <span>Discord Room</span>
+                <span>🎙️</span>
+              </button>
+
+              <button
+                onClick={() => {
+                  setActiveTab("blind-date");
+                  window.scrollTo({ top: 0, behavior: "smooth" });
+                }}
+                className="bg-amber-400/20 hover:bg-amber-400/30 text-amber-200 font-bold text-xs px-4 py-3 rounded-2xl border border-amber-400/40 transition active:scale-95 flex items-center space-x-1.5 cursor-pointer"
+              >
+                <span>FIFA Baller Card</span>
+                <span>⚽</span>
+              </button>
+            </div>
+          </div>
+
           {/* VERIFICATION SHIELD ACTIONS (TRACK 1) */}
           <div className="bg-white/95 backdrop-blur-2xl rounded-[2rem] p-6 border border-stone-200/80 shadow-[0_12px_35px_rgba(0,0,0,0.04)] space-y-3">
             <h3 className="font-serif font-bold text-base text-stone-900">
@@ -3036,6 +3121,12 @@ const Radar = ({ initialTab = "discover" }) => {
             Log Out
           </button>
         </div>
+      )}
+      {/* =========================================================================
+          ACTIVE TAB: BLIND DATE & DISCORD ROOM (CHECKFACECARD & DISCORD INTEGRATION)
+         ========================================================================= */}
+      {activeTab === "blind-date" && (
+        <BlindDateHub onBackToDiscover={() => setActiveTab("discover")} />
       )}
       </main>
 

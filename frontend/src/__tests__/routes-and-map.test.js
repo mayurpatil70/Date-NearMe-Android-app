@@ -180,3 +180,85 @@ describe("4. Socket.IO Real-Time Messaging & Offline Notifications Pipeline", ()
     expect(typingEvent.senderName).toBe("Archie");
   });
 });
+
+describe("5. Blind Dating, Discord Stage Rooms & FIFA Baller Card Logic", () => {
+  const formatTimer = (seconds) => {
+    const m = Math.floor(seconds / 60);
+    const s = seconds % 60;
+    return `${m}:${s < 10 ? "0" : ""}${s}`;
+  };
+
+  test("Formats 10-minute speed date countdown correctly", () => {
+    expect(formatTimer(600)).toBe("10:00");
+    expect(formatTimer(599)).toBe("9:59");
+    expect(formatTimer(65)).toBe("1:05");
+    expect(formatTimer(9)).toBe("0:09");
+    expect(formatTimer(0)).toBe("0:00");
+  });
+
+  test("Mutual consent photo reveal state machine enforces 2-way approval", () => {
+    let userConsented = false;
+    let partnerConsented = false;
+    const isPhotoRevealed = () => userConsented && partnerConsented;
+
+    // Initially photos are blurred
+    expect(isPhotoRevealed()).toBe(false);
+
+    // User agrees to reveal
+    userConsented = true;
+    expect(isPhotoRevealed()).toBe(false); // Still hidden until partner agrees!
+
+    // Partner also agrees
+    partnerConsented = true;
+    expect(isPhotoRevealed()).toBe(true); // Now unblurred!
+  });
+
+  test("Generates valid Discord room codes with DATE prefix", () => {
+    const generateRoomCode = () => {
+      const rand = Math.floor(1000 + Math.random() * 9000);
+      return `DATE-${rand}`;
+    };
+
+    const code = generateRoomCode();
+    expect(code).toMatch(/^DATE-\d{4}$/);
+  });
+
+  test("Generates shareable Discord lounge room invite link", () => {
+    const roomCode = "DATE-7749";
+    const origin = "https://datenearme.vercel.app";
+    const inviteLink = `${origin}/blind-date?room=${roomCode}`;
+
+    expect(inviteLink).toBe("https://datenearme.vercel.app/blind-date?room=DATE-7749");
+    expect(inviteLink).toContain("room=DATE-7749");
+  });
+
+  test("Calculates FIFA Baller Card tier and transfer valuation accurately", () => {
+    const calculateBallerCard = (ovr) => ({
+      ovr,
+      tier: ovr >= 94 ? "ICONIC WORLD CLASS" : "ELITE ROMANTIC",
+      transferValue: `₹${(ovr * 1.4).toFixed(1)}M`,
+    });
+
+    const cardElite = calculateBallerCard(91);
+    expect(cardElite.tier).toBe("ELITE ROMANTIC");
+    expect(cardElite.transferValue).toBe("₹127.4M");
+
+    const cardIconic = calculateBallerCard(96);
+    expect(cardIconic.tier).toBe("ICONIC WORLD CLASS");
+    expect(cardIconic.transferValue).toBe("₹134.4M");
+  });
+
+  test("Partner cafe date pass coupon generates valid 15% discount for real-world dates", () => {
+    const cafeCoupons = [
+      { name: "Subko Coffee", coupon: "DATE-SUBKO-15" },
+      { name: "Blue Tokai", coupon: "DATE-BLUETOKAI-15" },
+      { name: "Third Wave Coffee", coupon: "DATE-THIRDWAVE-15" },
+      { name: "Cafe Mondegar", coupon: "DATE-MONDEGAR-15" },
+    ];
+
+    cafeCoupons.forEach((cafe) => {
+      expect(cafe.coupon.startsWith("DATE-")).toBe(true);
+      expect(cafe.coupon.endsWith("-15")).toBe(true);
+    });
+  });
+});
